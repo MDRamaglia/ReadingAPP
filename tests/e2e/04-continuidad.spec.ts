@@ -124,4 +124,22 @@ test.describe('Continuidad', () => {
     await waitBookReady(page);
     await expect(page.locator('[data-testid=progress-text]')).toHaveText(/^Pág\. 1\b/);
   });
+
+  test('después de la primera visita funciona sin conexión', async ({ page, context }) => {
+    await page.goto('/');
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload();
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await importAndOpen(page, 'ensayo.docx');
+    await waitBookReady(page);
+    await context.setOffline(true);
+    await page.goto('/');
+    await expect(page.locator('[data-testid=doc-item]')).toHaveCount(1);
+    await page.locator('[data-testid=doc-item] .doc-open').click();
+    await waitBookReady(page);
+    await toFocus(page);
+    await tapAt(page, 0.7, 0.5);
+    expect((await active(page)).k + (await active(page)).b).toBeGreaterThan(0);
+    await context.setOffline(false);
+  });
 });

@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: Settings = {
 
 export const LIMITS = {
   fontSize: { min: 14, max: 34, step: 1 },
-  width: { min: 20, max: 48, step: 2 },
+  width: { min: 12, max: 48, step: 1 },
   lineHeight: { min: 1.2, max: 2.2, step: 0.1 },
 };
 

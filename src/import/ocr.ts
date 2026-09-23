@@ -6,7 +6,7 @@
 import type Tesseract from 'tesseract.js';
 import { getDoc, getFile, getBlocks, putBlocks, putDoc } from '../lib/db';
 import { closePdf, openPdf, renderPageToCanvas, vendorUrl } from '../lib/pdfjs';
-import { escapeHtml } from '../lib/text';
+import { escapeHtml, looksLikePageNumber } from '../lib/text';
 import type { Block, DocMeta, OcrPageStatus } from '../lib/types';
 import { firstBlockOfPage, listLabels, scanNotice } from './pdf';
 
@@ -83,7 +83,7 @@ const ENDS_SENTENCE = /[.!?:;»"”)…]$/;
  * rearman con la geometría de cada renglón: separación vertical, altura de la
  * letra, sangría y renglones cortos que cierran una oración.
  */
-export function ocrToBlocks(data: { blocks?: TBlock[] | null }, page: number): Block[] {
+export function ocrToBlocks(data: { blocks?: TBlock[] | null }, page: number, pageH = 0): Block[] {
   const lines: OcrLine[] = [];
   (data.blocks ?? []).forEach((blk, bi) => {
     if (/IMAGE|LINE|NOISE/.test(blk.blocktype ?? '')) return;
@@ -91,6 +91,9 @@ export function ocrToBlocks(data: { blocks?: TBlock[] | null }, page: number): B
       for (const line of para.lines) {
         const words = line.words.map((w) => ({ text: w.text.trim(), confidence: w.confidence })).filter((w) => w.text);
         if (!words.length) continue;
+        // Número de página impreso en el margen: no forma parte del texto.
+        const inMargin = pageH > 0 && (line.bbox.y1 < pageH * 0.08 || line.bbox.y0 > pageH * 0.92);
+        if (inMargin && looksLikePageNumber(words.map((w) => w.text).join(' '))) continue;
         const h = line.rowAttributes?.rowHeight || line.bbox.y1 - line.bbox.y0;
         const base = line.baseline ? Math.max(line.baseline.y0, line.baseline.y1) : line.bbox.y1;
         lines.push({ words, x0: line.bbox.x0, x1: line.bbox.x1, base, h, blk: bi, heading: blk.blocktype === 'HEADING_TEXT' });
@@ -209,7 +212,7 @@ function refreshMeta(meta: DocMeta, blocks: Block[]): void {
   const idx = (st: OcrPageStatus) => pages.map((p, i) => (p.ocr?.status === st ? i : -1)).filter((i) => i >= 0);
   const low = idx('low');
   const failed = idx('failed');
-  meta.warnings = meta.warnings.filter((w) => !w.startsWith('Reconocimiento') && !w.includes('escaneada'));
+  meta.warnings = meta.warnings.filter((w) => !w.startsWith('Reconocimiento') && !/escanead[oa]s?\b/.test(w));
   if (pending) {
     meta.warnings.push(`${pending} ${pending === 1 ? 'página escaneada sigue' : 'páginas escaneadas siguen'} sin reconocer.`);
   }
@@ -326,7 +329,7 @@ class OcrService {
         } else {
           await this.worker.setParameters({ user_defined_dpi: String(Math.round(72 * scale)) });
           const { data } = await this.worker.recognize(canvas, {}, { text: true, blocks: true });
-          fresh = ocrToBlocks(data as unknown as { blocks: TBlock[] }, i);
+          fresh = ocrToBlocks(data as unknown as { blocks: TBlock[] }, i, canvas.height);
           confidence = Math.round(data.confidence);
           words = fresh.reduce((s, b) => s + (b.html.match(/\S+/g)?.length ?? 0), 0);
           const chars = fresh.reduce((s, b) => s + b.len, 0);

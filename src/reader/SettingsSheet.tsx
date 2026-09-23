@@ -11,6 +11,17 @@ const THEMES: Array<{ id: Theme; label: string }> = [
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
+/**
+ * Letras por renglón aproximadas (una letra promedio mide cerca de medio em).
+ * Si la pantalla es más angosta que el ancho elegido, manda la pantalla.
+ */
+function widthLabel(s: Settings): string {
+  const available = Math.max(200, window.innerWidth - 44);
+  const px = Math.min(s.width * s.fontSize, available);
+  const chars = Math.round(px / (s.fontSize * 0.5));
+  return `≈ ${chars} letras por renglón${s.width * s.fontSize > available ? ' (máximo de esta pantalla)' : ''}`;
+}
+
 export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Settings; onClose: () => void; pdfBook: boolean }) {
   const size = (d: number) => updateSettings({ fontSize: clamp(s.fontSize + d, LIMITS.fontSize.min, LIMITS.fontSize.max) });
   return (
@@ -34,7 +45,7 @@ export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Set
 
       <label class="field">
         <span class="field-label">
-          Ancho de lectura <small>{s.width} em</small>
+          Ancho de lectura <small>{widthLabel(s)}</small>
         </span>
         <input
           type="range"

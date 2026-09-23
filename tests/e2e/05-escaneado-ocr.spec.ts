@@ -38,7 +38,8 @@ test.describe('PDF escaneado', () => {
     // Precisión real: se compara lo reconocido con el texto original de cada página.
     const db = await readDb(page);
     const blocks = db.content[0].blocks as Array<{ page: number; t: string; html: string }>;
-    const strip = (h: string) => h.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    const strip = (h: string) =>
+      h.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
     const report = truth.pages.map((expected, i) => {
       const got = norm(blocks.filter((b) => b.page === i && b.t !== 'notice').map((b) => strip(b.html)).join(' '));
       const cer = levenshtein(got, norm(expected)) / norm(expected).length;
@@ -49,7 +50,7 @@ test.describe('PDF escaneado', () => {
     console.log(`OCR (${testInfo.project.name}) ${seconds.toFixed(1)} s`, JSON.stringify(report, null, 1));
     for (const r of report.filter((r) => !r.degraded)) {
       expect(r.status).toBe('ok');
-      expect(r.cer).toBeLessThan(3);
+      expect(r.cer).toBeLessThan(1);
     }
     for (const r of report.filter((r) => r.degraded)) expect(['low', 'failed']).toContain(r.status);
 

@@ -63,8 +63,8 @@ export function OcrPanel({ meta: initial, compact }: { meta: DocMeta; compact?: 
           <p>
             <strong>Reconocimiento terminado.</strong> Ya podés leer en modo renglón.
           </p>
-          {!!mine.failed?.length && <p class="hint hint-warn">Sin texto confiable en: página{mine.failed.length > 1 ? 's' : ''} {mine.failed.join(', ')}.</p>}
-          {!!mine.low?.length && <p class="hint hint-warn">Reconocimiento dudoso en: página{mine.low.length > 1 ? 's' : ''} {mine.low.join(', ')}. Las palabras inciertas se subrayan con puntos.</p>}
+          {!compact && !!mine.failed?.length && <p class="hint hint-warn">Sin texto confiable en: página{mine.failed.length > 1 ? 's' : ''} {mine.failed.join(', ')}.</p>}
+          {!compact && !!mine.low?.length && <p class="hint hint-warn">Reconocimiento dudoso en: página{mine.low.length > 1 ? 's' : ''} {mine.low.join(', ')}. Las palabras inciertas se subrayan con puntos.</p>}
         </div>
       )}
       {finished && mine.status === 'cancelled' && <p class="hint">Reconocimiento detenido. Lo reconocido hasta ahora quedó guardado.</p>}

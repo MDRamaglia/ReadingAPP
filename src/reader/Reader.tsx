@@ -257,11 +257,12 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
       if (!h) return;
       const nextKeys = ['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter', 'j'];
       const prevKeys = ['ArrowLeft', 'ArrowUp', 'PageUp', 'k'];
+      // Espacio o Enter sobre un botón activan el botón, no pasan de página.
+      if ((e.key === ' ' || e.key === 'Enter') && t.closest('button, a')) return;
       if (e.key === ' ' && e.shiftKey) {
         e.preventDefault();
         h.prev();
       } else if (nextKeys.includes(e.key)) {
-        if (e.key === 'Enter' && t.closest('button')) return;
         e.preventDefault();
         h.next();
       } else if (prevKeys.includes(e.key)) {
@@ -272,6 +273,31 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [started, sheet]);
+
+  // Pista de uso la primera vez que se entra a cada modo.
+  const [hint, setHint] = useState('');
+  useEffect(() => {
+    if (!started) return;
+    const key = `renglon.hint.${mode}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+    } catch {
+      return;
+    }
+    const touch = matchMedia('(pointer: coarse)').matches;
+    setHint(
+      mode === 'focus'
+        ? touch
+          ? 'Tocá para avanzar un renglón. Tocá el borde izquierdo o la flecha para volver.'
+          : 'Clic, flecha ↓ o espacio para avanzar un renglón; flecha ↑ o clic a la izquierda para volver.'
+        : touch
+          ? 'Tocá el costado derecho o deslizá para pasar de página. El centro muestra u oculta los controles.'
+          : 'Flechas del teclado, clic en los costados o rueda del mouse para pasar de página.',
+    );
+    const t = window.setTimeout(() => setHint(''), 5200);
+    return () => clearTimeout(t);
+  }, [mode, started]);
 
   // Acceso para pruebas automatizadas.
   useEffect(() => {
@@ -430,6 +456,11 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
           <button class="line-back" onClick={() => handle.current?.prev()} aria-label="Renglón anterior" data-testid="line-back">
             <IconUp size={26} />
           </button>
+        )}
+        {hint && (
+          <div class="hint-toast" role="status">
+            {hint}
+          </div>
         )}
         {toast && (
           <div class="toast" role="status">

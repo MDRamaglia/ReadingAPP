@@ -14,10 +14,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npx vite preview --port 4173 --strictPort --host 127.0.0.1',
+    // Las pruebas se hacen contra la compilación de producción (con service worker).
+    command: 'npm run build && npx vite preview --port 4173 --strictPort --host 127.0.0.1',
     url: 'http://127.0.0.1:4173',
-    reuseExistingServer: true,
-    timeout: 60_000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
   },
   projects: [
     { name: 'celular', use: { ...devices['Pixel 7'] } },

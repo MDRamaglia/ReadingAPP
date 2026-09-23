@@ -141,16 +141,24 @@ class FlowEngine implements ViewHandle {
     return o >= this.blocks[lo]!.len ? { b: Math.min(lo + 1, this.blocks.length - 1), o: 0 } : { b: lo, o };
   }
 
-  private show(animate: boolean) {
+  /**
+   * Muestra la pantalla actual. El texto completo (cientos de columnas) se
+   * desplaza sin animación; la animación de «pasar página» se aplica solo a
+   * la ventana visible, que es del tamaño de la página. Animar el elemento
+   * gigante obliga al navegador a componer una capa enorme y puede tardar
+   * segundos en un celular.
+   */
+  private show(turn: 'next' | 'prev' | null) {
     const g = this.geom!;
     const x = this.spread * g.perView * this.pitch;
-    this.stage.classList.toggle('no-anim', !animate);
-    this.flow.style.transform = `translate3d(${-x}px, 0, 0)`;
-    this.onGeom(g, this.pages, this.spread);
-    if (!animate) {
-      void this.stage.offsetHeight;
-      requestAnimationFrame(() => this.stage.classList.remove('no-anim'));
+    this.flow.style.transform = `translateX(${-x}px)`;
+    this.view.style.transform = '';
+    this.view.classList.remove('turn-next', 'turn-prev', 'snap');
+    if (turn) {
+      void this.view.offsetWidth;
+      this.view.classList.add(`turn-${turn}`);
     }
+    this.onGeom(g, this.pages, this.spread);
   }
 
   private emit() {
@@ -161,11 +169,11 @@ class FlowEngine implements ViewHandle {
     return { ...this.pos };
   }
 
-  goTo(pos: Position, animate = false) {
+  goTo(pos: Position) {
     this.pos = { ...pos };
     const col = this.pageOf(pos);
     this.spread = Math.floor(col / this.geom!.perView);
-    this.show(animate);
+    this.show(null);
     this.emit();
   }
 
@@ -173,45 +181,49 @@ class FlowEngine implements ViewHandle {
     const col = Math.max(0, Math.min(this.pages - 1, page));
     this.spread = Math.floor(col / this.geom!.perView);
     this.pos = this.posOfCol(this.spread * this.geom!.perView);
-    this.show(true);
+    this.show(null);
     this.emit();
   }
 
   next() {
     if (this.spread + 1 >= this.spreads) {
       this.edge('end');
-      this.show(true);
+      this.snapBack();
       return;
     }
     this.spread++;
     this.pos = this.posOfCol(this.spread * this.geom!.perView);
-    this.show(true);
+    this.show('next');
     this.emit();
   }
 
   prev() {
     if (this.spread === 0) {
       this.edge('start');
-      this.show(true);
+      this.snapBack();
       return;
     }
     this.spread--;
     this.pos = this.posOfCol(this.spread * this.geom!.perView);
-    this.show(true);
+    this.show('prev');
     this.emit();
   }
 
+  /** La página acompaña al dedo mientras se desliza. */
   drag(dx: number) {
-    const g = this.geom!;
-    const x = this.spread * g.perView * this.pitch;
-    this.stage.classList.add('no-anim');
-    this.flow.style.transform = `translate3d(${-x + dx * 0.9}px, 0, 0)`;
+    this.view.classList.remove('turn-next', 'turn-prev', 'snap');
+    this.view.style.transform = `translateX(${dx * 0.6}px)`;
+  }
+
+  snapBack() {
+    this.view.classList.add('snap');
+    this.view.style.transform = '';
   }
 
   relayout(settings: Settings) {
     const keep = this.pos;
     this.layout(settings);
-    this.goTo(keep, false);
+    this.goTo(keep);
   }
 
   schedule(settings?: Settings) {
@@ -255,7 +267,7 @@ export function FlowBook({ blocks, assetUrls, settings, initial, handle, onRepor
     void document.fonts.ready.then(() => {
       if (!alive) return;
       e.layout(settings);
-      e.goTo(initial, false);
+      e.goTo(initial);
     });
     const detach = attachGestures(stage.current!, {
       tap: (x) => {
@@ -270,7 +282,7 @@ export function FlowBook({ blocks, assetUrls, settings, initial, handle, onRepor
         else if (dir === 'right') e.prev();
       },
       drag: (dx) => e.drag(dx),
-      dragCancel: () => e.goTo(e.position(), true),
+      dragCancel: () => e.snapBack(),
     });
     let wheelT = 0;
     const onWheel = (ev: WheelEvent) => {

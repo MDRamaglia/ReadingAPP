@@ -242,7 +242,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                   <IconWarn size={15} /> {w}
                 </p>
               ))}
-              {imp.result.meta.pages?.some((p) => p.ocr?.status === 'pending') && <OcrPanel meta={imp.result.meta} compact />}
+              {imp.result.meta.pages?.some((p) => p.kind === 'scan') && <OcrPanel meta={imp.result.meta} compact />}
               <button
                 class="btn btn-primary btn-block"
                 data-testid="import-open"

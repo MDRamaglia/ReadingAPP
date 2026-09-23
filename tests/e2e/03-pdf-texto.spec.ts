@@ -106,6 +106,15 @@ test.describe('PDF con texto seleccionable', () => {
     await page.getByRole('button', { name: 'Ir', exact: true }).click();
     const badge = page.locator('[data-testid=doubt-badge]');
     await expect(badge).toContainText('orden dudoso');
+    // Con todos los controles del PDF a la vista, nada desborda el ancho de la pantalla.
+    const fit = await page.evaluate(() => {
+      const bar = document.querySelector('.toolbar')!.getBoundingClientRect();
+      const track = document.querySelector('.focus-track')!.getBoundingClientRect();
+      return { vw: innerWidth, sw: document.documentElement.scrollWidth, bar: bar.right, text: track.right };
+    });
+    expect(fit.sw).toBeLessThanOrEqual(fit.vw);
+    expect(fit.bar).toBeLessThanOrEqual(fit.vw);
+    expect(fit.text).toBeLessThanOrEqual(fit.vw);
     await badge.click();
     const sheet = page.locator('[data-testid=original-page]');
     await expect(sheet).toContainText('Página original 5');
