@@ -7,6 +7,8 @@ import { expect, test } from '@playwright/test';
 import { artifacts, importAndOpen, importFile, tapAt, toFocus, waitBookReady } from './helpers';
 
 const shot = (name: string, project: string) => artifacts(`capturas/${project}-${name}.png`);
+// Las hojas entran con una animación breve: se espera a que termine antes de capturar.
+const settle = (page: import('@playwright/test').Page) => page.waitForTimeout(450);
 
 test.describe('Capturas', () => {
   test('pantallas principales', async ({ page }, info) => {
@@ -15,6 +17,7 @@ test.describe('Capturas', () => {
     await page.screenshot({ path: shot('01-biblioteca-vacia', p) });
 
     await importFile(page, 'ensayo.docx');
+    await settle(page);
     await page.screenshot({ path: shot('02-importado-word', p) });
     await page.click('[data-testid=import-open]');
     await waitBookReady(page);
@@ -68,12 +71,14 @@ test.describe('Capturas', () => {
     await page.keyboard.press('Escape');
 
     await importFile(page, 'escaneado.pdf');
+    await settle(page);
     await page.screenshot({ path: shot('13-escaneado-importado', p) });
     await page.click('[data-testid=ocr-start]');
     await expect(page.locator('[data-testid=ocr-progress]')).toBeVisible();
     await page.waitForTimeout(1200);
     await page.screenshot({ path: shot('14-ocr-progreso', p) });
     await expect(page.locator('[data-testid=ocr-done]')).toBeVisible({ timeout: 240_000 });
+    await settle(page);
     await page.screenshot({ path: shot('15-ocr-resultado', p) });
     await page.click('[data-testid=import-open]');
     await waitBookReady(page);
@@ -88,10 +93,12 @@ test.describe('Capturas', () => {
     await page.screenshot({ path: shot('17-biblioteca', p) });
     await page.setInputFiles('[data-testid=file-input]', 'tests/fixtures/antiguo.doc');
     await expect(page.locator('[data-testid=import-error]')).toBeVisible();
+    await settle(page);
     await page.screenshot({ path: shot('18-doc-antiguo', p) });
     await page.keyboard.press('Escape');
     await page.locator('[data-testid=continue-card]').click();
     await expect(page.locator('[data-testid=resume]')).toBeVisible();
+    await settle(page);
     await page.screenshot({ path: shot('19-continuar', p) });
   });
 });
