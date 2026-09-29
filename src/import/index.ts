@@ -9,14 +9,19 @@ import { ImportError, type ImportProgress, type ImportResult } from './types';
 export type FileKind = 'docx' | 'pdf' | 'doc' | 'unknown';
 
 export async function sniff(file: File): Promise<FileKind> {
-  const head = new Uint8Array(await file.slice(0, 8).arrayBuffer());
-  const hex = Array.from(head, (b) => b.toString(16).padStart(2, '0')).join('');
+  const head = new Uint8Array(await file.slice(0, 1024).arrayBuffer());
+  const hex = Array.from(head.subarray(0, 8), (b) => b.toString(16).padStart(2, '0')).join('');
   const ext = file.name.toLowerCase().split('.').pop() ?? '';
-  if (hex.startsWith('25504446')) return 'pdf'; // %PDF
+  // La marca %PDF- puede no estar en el primer byte: la norma admite datos previos.
+  const latin = String.fromCharCode(...head);
+  if (latin.includes('%PDF-')) return 'pdf';
   if (hex.startsWith('d0cf11e0a1b11ae1')) return 'doc'; // contenedor OLE2 de Office 97-2003
   // Un ZIP puede ser .docx (aunque venga renombrado) u otro formato de oficina.
   if (hex.startsWith('504b0304')) return ['odt', 'xlsx', 'pptx', 'zip', 'epub'].includes(ext) ? 'unknown' : 'docx';
   if (ext === 'doc') return 'doc';
+  // Último recurso: la extensión o el tipo que informa el sistema. Si no es un
+  // PDF de verdad, pdf.js lo va a rechazar con un mensaje claro.
+  if (ext === 'pdf' || file.type === 'application/pdf') return 'pdf';
   return 'unknown';
 }
 
@@ -69,7 +74,20 @@ export async function importFile(file: File, onProgress: (p: ImportProgress) => 
     );
   }
   onProgress({ phase: 'save', done: 0, total: 1 });
-  await saveImported(result.meta, file, result.blocks, result.assets);
+  try {
+    await saveImported(result.meta, file, result.blocks, result.assets);
+  } catch (e) {
+    const detail = (e as Error)?.message ?? String(e);
+    const full = /quota/i.test(detail) || (e as Error)?.name === 'QuotaExceededError';
+    throw new ImportError(
+      'No se pudo guardar «' + file.name + '» en este dispositivo.',
+      (full
+        ? 'El navegador se quedó sin espacio para la biblioteca. Eliminá algún documento y volvé a intentarlo.'
+        : 'El navegador no permitió guardarlo. Si estás en una pestaña privada, abrí la app en una pestaña normal o instalada en la pantalla de inicio.') +
+        ' Detalle técnico: ' +
+        detail,
+    );
+  }
   // Pedir almacenamiento persistente reduce el riesgo de que el navegador
   // borre la biblioteca cuando necesita espacio.
   try {

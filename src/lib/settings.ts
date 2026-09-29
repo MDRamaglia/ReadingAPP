@@ -62,9 +62,9 @@ export function useSettings(): Settings {
 }
 
 const THEME_COLORS: Record<Settings['theme'], string> = {
-  light: '#fbf9f4',
+  light: '#f7f9fc',
   sepia: '#f3e8cf',
-  dark: '#161513',
+  dark: '#0a0e16',
 };
 
 export function applyTheme(s: Settings): void {

@@ -4,7 +4,7 @@
  * lectura de forma automática.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { db, getBlocks, getDoc, getFile, getProgress, mirrorProgress, putDoc, saveProgress } from '../lib/db';
+import { docAssets, getBlocks, getDoc, getFile, getProgress, mirrorProgress, putDoc, saveProgress } from '../lib/db';
 import { closePdf, openPdf, type PDFDocumentProxy } from '../lib/pdfjs';
 import { useSettings } from '../lib/settings';
 import type { Block, DocMeta, Position, Progress, ReadMode } from '../lib/types';
@@ -35,8 +35,7 @@ async function loadDoc(id: string): Promise<Loaded> {
   const meta = await getDoc(id);
   if (!meta) throw new Error('No se encontró el documento.');
   const blocks = await getBlocks(id);
-  const d = await db();
-  const assets = await d.getAllFromIndex('assets', 'byDoc', id);
+  const assets = await docAssets(id);
   const urls = new Map(assets.map((a) => [a.key, URL.createObjectURL(a.blob)]));
   let pdf: PDFDocumentProxy | null = null;
   if (meta.kind === 'pdf') {
@@ -140,13 +139,20 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     }
   }, []);
 
+  // Al ocultar o cerrar la página solo se usa la copia síncrona (localStorage):
+  // una escritura de IndexedDB iniciada mientras la página se descarta puede
+  // quedar colgada en Safari y bloquear las lecturas posteriores del progreso.
+  // Si la página vuelve a verse, el guardado pendiente sigue su curso.
   useEffect(() => {
-    const onHide = () => document.visibilityState === 'hidden' && flush();
+    const onHide = () => {
+      if (document.visibilityState === 'hidden' && pending.current) mirrorProgress(pending.current);
+    };
+    const onPageHide = () => pending.current && mirrorProgress(pending.current);
     document.addEventListener('visibilitychange', onHide);
-    window.addEventListener('pagehide', flush);
+    window.addEventListener('pagehide', onPageHide);
     return () => {
       document.removeEventListener('visibilitychange', onHide);
-      window.removeEventListener('pagehide', flush);
+      window.removeEventListener('pagehide', onPageHide);
       flush();
     };
   }, [flush]);

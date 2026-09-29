@@ -1,4 +1,4 @@
-# Renglón
+# Knowmadic
 
 Lector de documentos **Word (.docx)** y **PDF** en español, pensado para leer cómodo con el celular en una mano y también en la computadora. Tiene dos maneras de leer:
 
@@ -6,6 +6,8 @@ Lector de documentos **Word (.docx)** y **PDF** en español, pensado para leer c
 - **Modo renglón**: una sola línea en foco, con el texto de alrededor atenuado u oculto. Cada toque avanza exactamente un renglón.
 
 Todo se procesa y se guarda **en el dispositivo**. La app no envía documentos a ningún servidor, tampoco para el reconocimiento de texto (OCR).
+
+La app se llamó antes «Renglón». Los nombres internos de almacenamiento (`renglon…`) se conservan a propósito para que quien ya la usaba no pierda su biblioteca ni su progreso.
 
 ## Qué hace
 
@@ -25,7 +27,7 @@ Todo se procesa y se guarda **en el dispositivo**. La app no envía documentos a
 - Modo libro: los PDF conservan su aspecto y su **numeración original** (por ejemplo, i, ii, 1, 2…). Los Word se reparten en páginas del tamaño de la pantalla.
 - Modo renglón: la línea es la que se ve con la letra y el ancho elegidos. Al cambiar la letra, el ancho, el interlineado o girar el celular, las líneas se recalculan **sin perder el lugar**.
 - Retroceder un renglón: botón visible (abajo a la izquierda), toque en el borde izquierdo, flecha ↑ o deslizando hacia abajo.
-- Ajustes: tamaño de letra, ancho de lectura, interlineado, tema claro / sepia / oscuro, tipografía (Literata o Atkinson Hyperlegible) y texto alrededor atenuado u oculto.
+- Ajustes: tamaño de letra, ancho de lectura, interlineado, tema claro (blanco con acento azul) / sepia (papel cálido con acento azul marino) / oscuro (negro azulado con acento azul claro), tipografía (Literata o Atkinson Hyperlegible) y texto alrededor atenuado u oculto.
 - Indicador discreto de avance y «Ir a…» página (por su número impreso en los PDF) o sección.
 
 **Continuidad**
@@ -78,7 +80,18 @@ npm run typecheck   # tipos
 npm test            # pruebas unitarias (reconstrucción de texto de PDF, guiones, números de página)
 npm run test:e2e    # pruebas de extremo a extremo en Chromium, como celular (Pixel 7) y computadora
 npm run fixtures    # regenera los documentos de prueba (requiere Python, python-docx, reportlab, pillow, pyphen y LibreOffice)
+python3 scripts/icons/generar_iconos.py   # regenera los íconos (requiere Pillow)
 ```
+
+**Safari (iPhone y iPad).** Algunos fallos solo aparecen en WebKit, el motor de Safari: por ejemplo, el libro de Word repartido en una sola página o el guardado de archivos en IndexedDB. `scripts/webkit/probar_safari.py` recorre en WebKit (WebKitGTK por WebDriver) lo mismo que una persona en el iPhone: importar un Word y dos PDF, pasar páginas, avanzar de a un renglón y reconocer el PDF escaneado.
+
+```bash
+sudo apt-get install webkit2gtk-driver xvfb && pip install selenium
+npm run build && npm run preview &
+xvfb-run -a python3 scripts/webkit/probar_safari.py
+```
+
+No reemplaza probar en un iPhone real (el selector de archivos, la instalación en la pantalla de inicio y los límites de memoria son propios de iOS), pero detecta los problemas del motor.
 
 Las pruebas de extremo a extremo usan documentos reales de `tests/fixtures/` y verifican, entre otras cosas:
 
@@ -108,7 +121,7 @@ tests/
   e2e/        pruebas de extremo a extremo (Playwright)
   unit/       pruebas unitarias (Vitest)
   fixtures/   documentos de prueba reales
-scripts/      copia local de recursos de pdf.js y Tesseract; generador de documentos de prueba
+scripts/      copia local de recursos de pdf.js y Tesseract; generadores de documentos de prueba y de íconos; prueba en WebKit
 ```
 
 ## Créditos

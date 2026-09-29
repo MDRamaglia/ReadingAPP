@@ -289,10 +289,10 @@ button:disabled {
   color: var(--ink-2);
 }
 .doc-docx {
-  box-shadow: inset 3px 0 0 #3b6fb6;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .doc-pdf {
-  box-shadow: inset 3px 0 0 #b8452f;
+  box-shadow: inset 3px 0 0 var(--ink);
 }
 .doc-info {
   display: grid;
@@ -361,7 +361,7 @@ button:disabled {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(20, 15, 8, 0.3);
+  background: rgba(5, 10, 20, 0.35);
   animation: fade-in 0.18s ease-out;
 }
 .sheet {
@@ -531,16 +531,16 @@ input[type='range'] {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 .swatch-light .swatch-chip {
-  background: #fbf9f4;
-  color: #1e1b16;
+  background: #f7f9fc;
+  color: #0b1220;
 }
 .swatch-sepia .swatch-chip {
   background: #f3e8cf;
-  color: #3a2c1a;
+  color: #221d15;
 }
 .swatch-dark .swatch-chip {
-  background: #161513;
-  color: #e3ded4;
+  background: #0a0e16;
+  color: #e7ecf3;
 }
 
 /* ——— Progreso de importación y OCR ——— */
