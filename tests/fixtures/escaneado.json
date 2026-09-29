@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "Capítulo primero Durante siglos, leer fue una tarea que exigía las dos manos. El rollo de papiro se desenrollaba con una mano mientras la otra recogía el tramo ya leído. No había páginas ni números que permitieran volver con facilidad a un pasaje. El códice cambió esa relación con el texto. Al coser hojas plegadas y protegerlas con tapas, los copistas crearon un objeto que podía abrirse en cualquier punto y leerse por ambas caras. Con el códice aparecieron la paginación, los índices y los títulos corrientes. Todas estas herramientas le permiten al lector orientarse y regresar al lugar exacto donde dejó la lectura.",
+    "Capítulo segundo Hacia 1450, en Maguncia, Johannes Gutenberg combinó tipos móviles de metal, una tinta a base de aceite y una prensa. El resultado fue una manera de producir ejemplares idénticos, con la misma página en el mismo lugar. Si todos los ejemplares coinciden, un lector de Venecia y otro de Sevilla pueden referirse a la misma página y al mismo renglón. La cita precisa y la nota al pie dependen de esa estabilidad. ¿Qué conservamos hoy de aquella revolución? La idea de que el lector necesita saber dónde está: el número de página, el capítulo y el renglón.",
+    "Capítulo tercero Cuando un documento proviene de un escáner, no hay texto sino fotografías de páginas. Para leerlas renglón por renglón es necesario reconocer los caracteres, algo que funciona bien con páginas nítidas y peor con copias borrosas. Esta página fue degradada a propósito: baja resolución, desenfoque y poco contraste, como una fotocopia gastada."
+  ],
+  "degraded": [
+    2
+  ]
+}
