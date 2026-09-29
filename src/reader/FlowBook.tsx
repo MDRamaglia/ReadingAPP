@@ -94,9 +94,13 @@ class FlowEngine implements ViewHandle {
       width: `${total}px`,
       height: `${pageH}px`,
     });
+    // El ancho de columna explícito es imprescindible en Safari/WebKit: con
+    // `column-count: 1` y ancho automático no crea columnas y todo el texto
+    // queda en una única «página» larga.
     Object.assign(this.flow.style, {
       width: `${total}px`,
       height: `${pageH}px`,
+      columnWidth: `${pageW}px`,
       columnCount: String(perView),
       columnGap: `${gap}px`,
     });

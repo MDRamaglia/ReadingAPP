@@ -5,13 +5,30 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { Block, DocMeta, Progress } from './types';
 
+/**
+ * Los archivos se guardan como bytes (ArrayBuffer) y no como Blob: Safari/WebKit
+ * rechaza guardar Blob en IndexedDB en algunas situaciones (por ejemplo, en
+ * navegación privada) con el error «Error preparing Blob/File data». Los
+ * registros antiguos con `blob` se siguen leyendo.
+ */
+interface Stored {
+  blob?: Blob;
+  data?: ArrayBuffer;
+  type?: string;
+}
+
 interface RenglonDB extends DBSchema {
   docs: { key: string; value: DocMeta };
-  files: { key: string; value: { id: string; blob: Blob } };
+  files: { key: string; value: Stored & { id: string } };
   content: { key: string; value: { id: string; blocks: Block[] } };
-  assets: { key: string; value: { key: string; docId: string; blob: Blob }; indexes: { byDoc: string } };
+  assets: { key: string; value: Stored & { key: string; docId: string }; indexes: { byDoc: string } };
   progress: { key: string; value: Progress };
 }
+
+export const storedBlob = (r: Stored | undefined): Blob | undefined =>
+  r ? (r.blob ?? (r.data ? new Blob([r.data], { type: r.type ?? '' }) : undefined)) : undefined;
+
+const toStored = async (b: Blob): Promise<Stored> => ({ data: await b.arrayBuffer(), type: b.type });
 
 let dbp: Promise<IDBPDatabase<RenglonDB>> | null = null;
 
@@ -43,7 +60,7 @@ export async function putDoc(meta: DocMeta): Promise<void> {
 }
 
 export async function getFile(id: string): Promise<Blob | undefined> {
-  return (await (await db()).get('files', id))?.blob;
+  return storedBlob(await (await db()).get('files', id));
 }
 
 export async function getBlocks(id: string): Promise<Block[]> {
@@ -54,12 +71,10 @@ export async function putBlocks(id: string, blocks: Block[]): Promise<void> {
   await (await db()).put('content', { id, blocks });
 }
 
-export async function getAsset(key: string): Promise<Blob | undefined> {
-  return (await (await db()).get('assets', key))?.blob;
-}
-
-export async function putAsset(docId: string, key: string, blob: Blob): Promise<void> {
-  await (await db()).put('assets', { key, docId, blob });
+/** Imágenes de un documento, listas para mostrar. */
+export async function docAssets(docId: string): Promise<Array<{ key: string; blob: Blob }>> {
+  const list = await (await db()).getAllFromIndex('assets', 'byDoc', docId);
+  return list.map((a) => ({ key: a.key, blob: storedBlob(a)! })).filter((a) => a.blob);
 }
 
 /** Guarda un documento recién importado de una sola vez. */
@@ -69,13 +84,17 @@ export async function saveImported(
   blocks: Block[],
   assets: Array<{ key: string; blob: Blob }>,
 ): Promise<void> {
+  // Los bytes se leen antes de abrir la transacción: IndexedDB la cierra sola
+  // si durante ella se espera otra cosa.
+  const fileData = await toStored(file);
+  const assetData = await Promise.all(assets.map(async (a) => ({ key: a.key, docId: meta.id, ...(await toStored(a.blob)) })));
   const d = await db();
   const tx = d.transaction(['docs', 'files', 'content', 'assets'], 'readwrite');
   await Promise.all([
     tx.objectStore('docs').put(meta),
-    tx.objectStore('files').put({ id: meta.id, blob: file }),
+    tx.objectStore('files').put({ id: meta.id, ...fileData }),
     tx.objectStore('content').put({ id: meta.id, blocks }),
-    ...assets.map((a) => tx.objectStore('assets').put({ key: a.key, docId: meta.id, blob: a.blob })),
+    ...assetData.map((a) => tx.objectStore('assets').put(a)),
     tx.done,
   ]);
 }
@@ -119,8 +138,31 @@ export async function saveProgress(p: Progress): Promise<void> {
   await (await db()).put('progress', p);
 }
 
+/** Resuelve con `fallback` si la promesa tarda más de `ms`. */
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(fallback), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      () => {
+        clearTimeout(t);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 export async function getProgress(id: string): Promise<Progress | undefined> {
-  const stored = await (await db()).get('progress', id);
+  // Si IndexedDB no responde a tiempo (Safari puede demorar una lectura detrás
+  // de una escritura de una página anterior), vale la copia de localStorage.
+  const stored = await withTimeout(
+    db().then((d) => d.get('progress', id)),
+    1500,
+    undefined,
+  );
   let mirrored: Progress | undefined;
   try {
     const raw = localStorage.getItem(progressMirrorKey(id));

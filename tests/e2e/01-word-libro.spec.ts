@@ -40,6 +40,9 @@ test.describe('Word (.docx) en modo libro', () => {
     const txt = await progressText(page);
     const total = Number(/de (\d+)/.exec(txt)![1]);
     expect(total).toBeGreaterThan(mobile ? 8 : 3);
+    // Safari/WebKit solo crea columnas si el ancho de columna es explícito
+    // (con «column-count: 1» y ancho automático todo cae en una sola página).
+    expect(await page.locator('.flow').evaluate((f) => getComputedStyle(f).columnWidth)).not.toBe('auto');
     // Una página en el celular; dos enfrentadas en la computadora.
     expect(txt).toMatch(mobile ? /^Pág\. 1 de \d+$/ : /^Pág\. 1–2 de \d+$/);
     await expect(page.locator('.folio')).toHaveCount(mobile ? 1 : 2);
