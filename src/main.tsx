@@ -13,7 +13,8 @@ import { applyTheme, getSettings } from './lib/settings';
 applyTheme(getSettings());
 render(<App />, document.getElementById('app')!);
 
-// Funcionamiento sin conexión e instalación en la pantalla de inicio.
+// Funcionamiento sin conexión, instalación en la pantalla de inicio y
+// actualización automática cuando se publica una versión nueva.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  void import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));
+  void import('./lib/update').then(({ startUpdates }) => startUpdates());
 }

@@ -36,6 +36,7 @@ La app se llamó antes «Renglón». Los nombres internos de almacenamiento (`re
 - Al cambiar entre libro y renglón se llega al mismo fragmento; si no pasaste de página, al mismo renglón exacto.
 - Biblioteca con avance de cada documento y opción de **eliminarlo junto con su progreso**.
 - Funciona sin conexión después de la primera visita y se puede instalar en la pantalla de inicio (PWA).
+- Cuando se publica una versión nueva, la app se actualiza sola al abrirla o al volver a ella: descarga la versión nueva, la activa y se recarga en el mismo documento, con el punto de lectura guardado. Si hay un reconocimiento de texto (OCR) en curso, espera a que termine.
 
 ## Controles
 
@@ -104,6 +105,7 @@ Las pruebas de extremo a extremo usan documentos reales de `tests/fixtures/` y v
 - cambiar de modo sin perder el fragmento;
 - **reanudar después de cerrar el navegador por completo**;
 - el `.doc` antiguo con instrucciones de conversión, la eliminación con su progreso y el uso sin conexión;
+- que **una versión nueva reemplace a la anterior** con la app abierta, sin quedar «en espera» y sin perder el lugar de lectura;
 - el OCR de un PDF escaneado: precisión frente al texto original, aviso de la página degradada y ausencia de peticiones externas.
 
 Las capturas de pantalla y el informe de precisión del OCR quedan en `tests/.artifacts/`.

@@ -32,6 +32,13 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // La versión nueva reemplaza a la anterior apenas se descarga. El
+        // complemento solo lo activa solo si él mismo registra el service
+        // worker; como aquí se registra a mano (src/lib/update.ts), hay que
+        // pedirlo explícitamente o la versión nueva queda «en espera» mientras
+        // haya una pestaña abierta, que en el iPhone es casi siempre.
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,mjs,css,html,woff2,svg,png,webmanifest}'],
         globIgnores: ['vendor/**', '**/*cyrillic*', '**/*greek*', '**/*vietnamese*'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
