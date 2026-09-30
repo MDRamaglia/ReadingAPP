@@ -49,6 +49,9 @@ export function App() {
       window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', on);
+    // Si el hash cambió entre el primer dibujo y este efecto, ese aviso se perdió.
+    const now = parseRoute(location.hash);
+    setRoute((r) => (JSON.stringify(r) === JSON.stringify(now) ? r : now));
     return () => window.removeEventListener('hashchange', on);
   }, []);
 
