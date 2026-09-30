@@ -109,6 +109,13 @@ def css(d, sel):
     return d.find_element(By.CSS_SELECTOR, sel)
 
 
+def pulsar(d, sel):
+    """Centra el botón antes de tocarlo (WebDriver lo deja al borde, bajo la barra fija de abajo)."""
+    el = css(d, sel)
+    d.execute_script("arguments[0].scrollIntoView({block: 'center'})", el)
+    el.click()
+
+
 def cuenta_premium(d, w):
     """Registro con el servicio local de prueba y plan premium desde el panel de desarrollo."""
     d.get(BASE + '?dev=1#/cuenta/registro')
@@ -117,7 +124,7 @@ def cuenta_premium(d, w):
     nombre = 'safari%d' % int(time.time())
     for campo, valor in [('username', nombre), ('email', nombre + '@prueba.com'), ('password', 'secreto123'), ('confirm', 'secreto123')]:
         css(d, f'[name={campo}]').send_keys(valor)
-    css(d, '[data-testid=signup-submit]').click()
+    pulsar(d, '[data-testid=signup-submit]')
     w.until(lambda x: x.find_elements(By.CSS_SELECTOR, '[data-testid=plan-card]'))
     comprobar(nombre in css(d, '.page-title').text, 'cuenta: se registra e inicia sesión (contraseña con PBKDF2 del navegador)')
     css(d, '[data-testid=dev-toggle]').click()
@@ -138,7 +145,7 @@ def probar_resenas(d, w):
     for campo, valor in [('bookTitle', 'El túnel'), ('bookAuthor', 'Ernesto Sábato'), ('title', 'Obsesión en primera persona'), ('body', 'Castel lo cuenta todo.')]:
         css(d, f'[name={campo}]').send_keys(valor)
     d.execute_script("const s=document.querySelector('[name=category]'); s.value='Novela'; s.dispatchEvent(new Event('change',{bubbles:true}))")
-    css(d, '[data-testid=review-submit]').click()
+    pulsar(d, '[data-testid=review-submit]')
     w.until(lambda x: x.find_elements(By.CSS_SELECTOR, '[data-testid=review-full]'))
     d.get(BASE + '#/resenas')
     w.until(lambda x: x.find_elements(By.CSS_SELECTOR, '[data-testid=review-search]'))
