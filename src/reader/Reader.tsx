@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { docAssets, getBlocks, getDoc, getFile, getProgress, mirrorProgress, putDoc, saveProgress } from '../lib/db';
 import { closePdf, openPdf, type PDFDocumentProxy } from '../lib/pdfjs';
-import { useSettings } from '../lib/settings';
+import { curlEnabled, getSettings, useSettings } from '../lib/settings';
 import type { Block, DocMeta, Position, Progress, ReadMode } from '../lib/types';
 import { IconBook, IconLibrary, IconLine, IconPage, IconToc, IconType, IconUp, IconWarn, IconScan } from '../ui/icons';
 import { FlowBook } from './FlowBook';
@@ -253,11 +253,15 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
   };
 
   // ——— Teclado ———
+  // Se consulta la hoja abierta en el momento de la tecla (no la de la última
+  // suscripción): así la primera tecla después de cerrar los ajustes no se pierde.
+  const sheetOpen = useRef(sheet);
+  sheetOpen.current = sheet;
   useEffect(() => {
     if (!started) return;
     const onKey = (e: KeyboardEvent) => {
-      if (sheet || e.altKey || e.ctrlKey || e.metaKey) return;
-      const t = e.target as HTMLElement;
+      if (sheetOpen.current || e.altKey || e.ctrlKey || e.metaKey) return;
+      const t = e.target instanceof Element ? e.target : document.body;
       if (t.closest('input, textarea, select')) return;
       const h = handle.current;
       if (!h) return;
@@ -278,7 +282,7 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [started, sheet]);
+  }, [started]);
 
   // Pista de uso la primera vez que se entra a cada modo.
   const [hint, setHint] = useState('');
@@ -292,14 +296,19 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
       return;
     }
     const touch = matchMedia('(pointer: coarse)').matches;
+    const vertical = getSettings().bookDirection === 'vertical';
     setHint(
       mode === 'focus'
         ? touch
           ? 'Tocá para avanzar un renglón. Tocá el borde izquierdo o la flecha para volver.'
           : 'Clic, flecha ↓ o espacio para avanzar un renglón; flecha ↑ o clic a la izquierda para volver.'
         : touch
-          ? 'Tocá el costado derecho o deslizá para pasar de página. El centro muestra u oculta los controles.'
-          : 'Flechas del teclado, clic en los costados o rueda del mouse para pasar de página.',
+          ? vertical
+            ? 'Tocá la parte de abajo o deslizá hacia arriba para pasar de página. El centro muestra u oculta los controles.'
+            : 'Tocá el costado derecho o deslizá para pasar de página. El centro muestra u oculta los controles.'
+          : vertical
+            ? 'Flechas ↑ ↓, clic arriba o abajo, o rueda del mouse para pasar de página.'
+            : 'Flechas del teclado, clic en los costados o rueda del mouse para pasar de página.',
     );
     const t = window.setTimeout(() => setHint(''), 5200);
     return () => clearTimeout(t);
@@ -440,6 +449,8 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
             pdf={pdf}
             pages={meta.pages ?? []}
             initialPage={initial.page ?? pageOfPos(blocks, initial) ?? 0}
+            direction={settings.bookDirection}
+            curl={curlEnabled(settings)}
             handle={handle}
             onReport={onReport}
             onEdge={onEdge}
@@ -451,6 +462,8 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
             blocks={blocks}
             assetUrls={urls}
             settings={settings}
+            direction={settings.bookDirection}
+            curl={curlEnabled(settings)}
             initial={initial}
             handle={handle}
             onReport={onReport}

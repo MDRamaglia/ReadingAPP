@@ -8,6 +8,8 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'light',
   font: 'literata',
   focusContext: 'dim',
+  bookDirection: 'horizontal',
+  pageCurl: false,
 };
 
 export const LIMITS = {
@@ -70,6 +72,12 @@ const THEME_COLORS: Record<Settings['theme'], string> = {
 export function applyTheme(s: Settings): void {
   document.documentElement.dataset.theme = s.theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[s.theme]);
+}
+
+/** Animación de hoja efectiva: solo en horizontal y si el sistema no pide reducir el movimiento. */
+export function curlEnabled(s: Settings): boolean {
+  const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return s.bookDirection === 'horizontal' && s.pageCurl && !reduced;
 }
 
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));

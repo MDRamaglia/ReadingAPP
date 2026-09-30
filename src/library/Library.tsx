@@ -121,7 +121,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
           </span>
           <div>
             <h1 class="brand-name">Knowmadic</h1>
-            <p class="brand-tag">Leé a tu ritmo: página a página o de a un renglón.</p>
+            <p class="brand-tag">Un lugar para leer. Un espacio para pensar.</p>
           </div>
         </div>
       </header>

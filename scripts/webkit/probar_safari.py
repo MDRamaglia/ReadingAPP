@@ -4,8 +4,9 @@
 Playwright usa Chromium en las pruebas habituales; algunos fallos solo
 aparecen en Safari (por ejemplo, la paginación del libro de Word o el guardado
 de archivos en IndexedDB). Este guion recorre los mismos pasos que una persona
-en el iPhone: cargar un Word y un PDF, pasar páginas, leer de a un renglón y
-reconocer el texto de un PDF escaneado.
+en el iPhone: cargar un Word y un PDF, pasar páginas (en horizontal, con la
+animación de hoja y en vertical), leer de a un renglón y reconocer el texto de
+un PDF escaneado.
 
 Requisitos (Ubuntu/Debian):
     sudo apt-get install webkit2gtk-driver xvfb
@@ -85,6 +86,59 @@ def abrir_y_leer(d, w, nombre, pagina_min):
     comprobar(not errs, f'{nombre}: sin errores de JavaScript {errs or ""}')
 
 
+MUESTREO = """
+const done = arguments[0];
+const turns = window.__flow?.turns ?? window.__pdfTurns;
+const rec = [];
+const front = () => document.querySelector('.book-stage .curl-front');
+const t0 = performance.now();
+const loop = () => {
+  const c = document.querySelector('.book-stage .curl');
+  const f = front();
+  rec.push({ visible: !!c && !c.hidden, t: turns && turns.curl ? turns.curl.t : null,
+             clip: f ? getComputedStyle(f).clipPath : '' });
+  if (performance.now() - t0 < 1300) requestAnimationFrame(loop); else done(rec);
+};
+requestAnimationFrame(loop);
+window.__reader.handle.current.%s();
+"""
+
+
+def probar_libro(d, w, nombre, pagina):
+    """Modo libro con animación de hoja y en vertical (preferencias guardadas)."""
+    for ajustes, titulo in [('{"pageCurl":true}', 'con animación de página'), ('{"bookDirection":"vertical","pageCurl":true}', 'vertical')]:
+        d.get(BASE)
+        d.execute_script(f"localStorage.setItem('renglon.settings', '{ajustes}')")
+        if not cargar(d, w, nombre):
+            return
+        d.find_element(By.CSS_SELECTOR, '[data-testid=import-open]').click()
+        w.until(lambda x: x.execute_script("const r=window.__reader; return !!(r && r.report && r.report.pages)"))
+        time.sleep(1.5)
+        antes = progreso(d)
+        cuadros = d.execute_async_script(MUESTREO % 'next')
+        time.sleep(0.3)
+        despues = progreso(d)
+        comprobar(despues != antes, f'{nombre} {titulo}: pasa de página ({antes} → {despues})')
+        intermedios = [c for c in cuadros if c['visible'] and c['t'] is not None and 0.05 < c['t'] < 0.95]
+        if titulo == 'vertical':
+            comprobar(not intermedios, f'{nombre} {titulo}: sin animación de hoja')
+            clase = d.execute_script("const v=document.querySelector('.flow-view, .pdf-stage > .pdf-spread'); return v ? v.className : ''")
+            comprobar('turn-next-v' in clase, f'{nombre} {titulo}: la página entra desde abajo ({clase})')
+        else:
+            recortes = {c['clip'][:5] for c in intermedios}
+            comprobar(len(intermedios) > 5 and recortes == {'path('}, f'{nombre} {titulo}: la hoja se dobla ({len(intermedios)} cuadros, recorte {recortes})')
+            comprobar(not cuadros[-1]['visible'], f'{nombre} {titulo}: la hoja se retira al terminar')
+            cuadros = d.execute_async_script(MUESTREO % 'prev')
+            time.sleep(0.3)
+            comprobar(progreso(d) == antes, f'{nombre} {titulo}: retrocede ({progreso(d)})')
+            ts = [c['t'] for c in cuadros if c['visible'] and c['t'] is not None and 0.05 < c['t'] < 0.95]
+            comprobar(len(ts) > 5 and all(b <= a + 1e-6 for a, b in zip(ts, ts[1:])), f'{nombre} {titulo}: al retroceder la hoja vuelve ({len(ts)} cuadros)')
+        errs = d.execute_script('return window.__errs')
+        comprobar(not errs, f'{nombre} {titulo}: sin errores de JavaScript {errs or ""}')
+    d.get(BASE)
+    d.execute_script("localStorage.removeItem('renglon.settings')")
+
+
 def main():
     opts = Options()
     opts.binary_location = MINIBROWSER
@@ -98,6 +152,8 @@ def main():
             abrir_y_leer(d, w, 'ensayo.docx', 8)
         if cargar(d, w, 'texto.pdf'):
             abrir_y_leer(d, w, 'texto.pdf', 7)
+        probar_libro(d, w, 'ensayo.docx', 8)
+        probar_libro(d, w, 'texto.pdf', 7)
         if cargar(d, w, 'escaneado.pdf'):
             d.find_element(By.CSS_SELECTOR, '[data-testid=ocr-start]').click()
             w.until(lambda x: x.find_elements(By.CSS_SELECTOR, '[data-testid=ocr-done]'))

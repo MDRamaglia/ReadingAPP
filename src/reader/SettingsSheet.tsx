@@ -1,7 +1,7 @@
 import { LIMITS, clamp, updateSettings } from '../lib/settings';
 import type { Settings, Theme } from '../lib/types';
 import { Sheet } from '../ui/Sheet';
-import { IconMinus, IconPlus } from '../ui/icons';
+import { IconArrowsH, IconArrowsV, IconMinus, IconPlus } from '../ui/icons';
 
 const THEMES: Array<{ id: Theme; label: string }> = [
   { id: 'light', label: 'Claro' },
@@ -103,6 +103,8 @@ export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Set
         </div>
       </div>
 
+      <BookNav s={s} />
+
       <div class="field">
         <span class="field-label">Modo renglón: texto alrededor</span>
         <div class="segmented" role="radiogroup" aria-label="Texto alrededor del renglón">
@@ -115,5 +117,64 @@ export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Set
         </div>
       </div>
     </Sheet>
+  );
+}
+
+/**
+ * Modo libro: dirección para pasar páginas y animación de hoja. La animación
+ * solo existe en horizontal; en vertical el interruptor queda deshabilitado
+ * pero conserva su valor para cuando se vuelva a horizontal.
+ */
+function BookNav({ s }: { s: Settings }) {
+  const horizontal = s.bookDirection === 'horizontal';
+  const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let note = 'La hoja se dobla y descubre la página siguiente, como en un libro de papel.';
+  if (!horizontal) note = 'Disponible solo al pasar páginas en horizontal.';
+  else if (reduced) note = 'Tu dispositivo pide reducir el movimiento: por eso no se muestra.';
+  return (
+    <div class="field">
+      <span class="field-label" id="book-nav-label">
+        Modo libro: pasar página
+      </span>
+      <div class="segmented" role="radiogroup" aria-labelledby="book-nav-label">
+        <button
+          role="radio"
+          aria-checked={horizontal}
+          class={horizontal ? 'is-on' : ''}
+          onClick={() => updateSettings({ bookDirection: 'horizontal' })}
+          data-testid="dir-horizontal"
+        >
+          <IconArrowsH size={18} /> Horizontal
+        </button>
+        <button
+          role="radio"
+          aria-checked={!horizontal}
+          class={horizontal ? '' : 'is-on'}
+          onClick={() => updateSettings({ bookDirection: 'vertical' })}
+          data-testid="dir-vertical"
+        >
+          <IconArrowsV size={18} /> Vertical
+        </button>
+      </div>
+      <p class="field-note">
+        {horizontal ? 'Hacia la izquierda o la derecha: tocá los costados o deslizá de lado.' : 'Hacia arriba o abajo: tocá arriba o abajo, o deslizá en vertical.'}
+      </p>
+      <label class={`switch-row${horizontal ? '' : ' is-disabled'}`}>
+        <span class="switch-text">
+          <span class="switch-title">Animación de página</span>
+          <small>{note}</small>
+        </span>
+        <input
+          type="checkbox"
+          role="switch"
+          class="switch"
+          checked={s.pageCurl}
+          aria-checked={s.pageCurl}
+          disabled={!horizontal}
+          onChange={(e) => updateSettings({ pageCurl: (e.currentTarget as HTMLInputElement).checked })}
+          data-testid="page-curl"
+        />
+      </label>
+    </div>
   );
 }

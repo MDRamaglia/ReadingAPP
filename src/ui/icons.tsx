@@ -131,3 +131,19 @@ export const IconZoomOut = (p: P) => (
     <path d="m16 16 4.5 4.5M8 11h6" />
   </Svg>
 );
+
+export const IconArrowsH = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 12h16" />
+    <path d="m8 8-4 4 4 4" />
+    <path d="m16 8 4 4-4 4" />
+  </Svg>
+);
+
+export const IconArrowsV = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 4v16" />
+    <path d="m8 8 4-4 4 4" />
+    <path d="m8 16 4 4 4-4" />
+  </Svg>
+);

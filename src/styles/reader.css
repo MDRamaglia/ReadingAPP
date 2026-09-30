@@ -158,6 +158,11 @@
   }
 }
 
+/* Los avisos no interceptan toques: se puede pasar de página aunque estén a la vista. */
+.hint-toast,
+.toast {
+  pointer-events: none;
+}
 .hint-toast {
   position: absolute;
   left: 50%;
@@ -369,6 +374,12 @@
 .flow-view.turn-prev {
   animation: turn-prev 0.28s var(--ease);
 }
+.flow-view.turn-next-v {
+  animation: turn-next-v 0.28s var(--ease);
+}
+.flow-view.turn-prev-v {
+  animation: turn-prev-v 0.28s var(--ease);
+}
 .flow-view.snap {
   transition: transform 0.2s var(--ease);
 }
@@ -446,6 +457,12 @@
 .pdf-spread.turn-prev {
   animation: turn-prev 0.28s var(--ease);
 }
+.pdf-spread.turn-next-v {
+  animation: turn-next-v 0.28s var(--ease);
+}
+.pdf-spread.turn-prev-v {
+  animation: turn-prev-v 0.28s var(--ease);
+}
 @keyframes turn-next {
   from {
     transform: translateX(7%);
@@ -457,6 +474,118 @@
     transform: translateX(-7%);
     opacity: 0.15;
   }
+}
+@keyframes turn-next-v {
+  from {
+    transform: translateY(7%);
+    opacity: 0.15;
+  }
+}
+@keyframes turn-prev-v {
+  from {
+    transform: translateY(-7%);
+    opacity: 0.15;
+  }
+}
+
+/* ——— Animación de hoja (curl.ts) ——— */
+.curl {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+/*
+ * En reposo la capa queda invisible pero diagramada: así la copia del texto
+ * que hace de hoja ya está lista y la primera vuelta no se traba.
+ */
+.curl[hidden] {
+  display: block;
+  visibility: hidden;
+}
+.curl-front,
+.curl-content {
+  position: absolute;
+  inset: 0;
+}
+.curl-front,
+.curl-back {
+  will-change: transform;
+}
+/* Word: la pantalla entera es la hoja, del color del papel. */
+.flow-stage .curl-content {
+  background: var(--paper);
+}
+.curl-view {
+  position: absolute;
+  overflow: hidden;
+}
+/*
+ * Dorso: el marco de la hoja (reflejado sobre el pliegue) recorta un papel
+ * enorme que empieza en el pliegue; así solo cambian transformaciones.
+ */
+.curl-back {
+  position: absolute;
+  overflow: hidden;
+  transform-origin: 0 0;
+}
+.curl-paper,
+.curl-cast-strip {
+  position: absolute;
+  left: 0;
+  top: -2500px;
+  height: 5000px;
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+.curl-paper {
+  width: 5000px;
+  background-color: var(--curl-paper, var(--paper));
+}
+.curl-shade {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transform-origin: 0 50%;
+  width: 1000px;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.22) 0,
+    rgba(0, 0, 0, 0.05) 6%,
+    var(--curl-shine, rgba(255, 255, 255, 0.32)) 20%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.05) 82%,
+    rgba(0, 0, 0, 0.17) 100%
+  );
+}
+/* Sombra de la hoja sobre la página que va descubriendo. */
+.curl-cast {
+  position: absolute;
+  overflow: hidden;
+}
+.curl-cast-strip {
+  width: 100px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0));
+}
+/* PDF: la hoja es la página original, que siempre es blanca. */
+.pdf-stage .curl {
+  --curl-paper: #fff;
+}
+:root[data-theme='sepia'] .pdf-stage .curl {
+  --curl-paper: #f6ecd6;
+}
+:root[data-theme='dark'] .pdf-stage .curl {
+  --curl-paper: #dcdcdc;
+}
+/* Sobre papel oscuro, un brillo más tenue. */
+:root[data-theme='dark'] .flow-stage .curl {
+  --curl-shine: rgba(255, 255, 255, 0.12);
+}
+.pdf-stage .curl-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .pdf-page {
   position: relative;

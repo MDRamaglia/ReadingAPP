@@ -25,6 +25,8 @@ La app se llamó antes «Renglón». Los nombres internos de almacenamiento (`re
 **Lectura**
 
 - Modo libro: los PDF conservan su aspecto y su **numeración original** (por ejemplo, i, ii, 1, 2…). Los Word se reparten en páginas del tamaño de la pantalla.
+  - **Dirección para pasar página**: horizontal (izquierda y derecha, la opción inicial) o vertical (arriba y abajo). En las dos, cada paso lleva a una página completa, y los toques, deslizamientos y la rueda se adaptan a la dirección elegida. Cambiarla no mueve el lugar de lectura.
+  - **Animación de página** (opcional, solo en horizontal): la hoja se dobla desde la esquina, con curvatura y sombras, y descubre poco a poco la página siguiente; al retroceder, la misma hoja vuelve a su lugar. Acompaña al dedo al deslizar (si se suelta antes de tiempo, la hoja vuelve), funciona con toques, teclado y rueda, y los pases rápidos terminan siempre en la página correcta. En vertical el interruptor queda deshabilitado pero conserva su valor. No se muestra si el sistema pide reducir el movimiento.
 - Modo renglón: la línea es la que se ve con la letra y el ancho elegidos. Al cambiar la letra, el ancho, el interlineado o girar el celular, las líneas se recalculan **sin perder el lugar**.
 - Retroceder un renglón: botón visible (abajo a la izquierda), toque en el borde izquierdo, flecha ↑ o deslizando hacia abajo.
 - Ajustes: tamaño de letra, ancho de lectura, interlineado, tema claro (blanco con acento azul) / sepia (papel cálido con acento azul marino) / oscuro (negro azulado con acento azul claro), tipografía (Literata o Atkinson Hyperlegible) y texto alrededor atenuado u oculto.
@@ -42,7 +44,8 @@ La app se llamó antes «Renglón». Los nombres internos de almacenamiento (`re
 
 | Acción | Celular | Computadora |
 | --- | --- | --- |
-| Pasar página (libro) | Tocar el costado derecho o izquierdo; deslizar | ← → , AvPág/RePág, rueda del mouse, clic en los costados |
+| Pasar página (libro, horizontal) | Tocar el costado derecho o izquierdo; deslizar de lado | ← → ↑ ↓, AvPág/RePág, rueda del mouse, clic en los costados |
+| Pasar página (libro, vertical) | Tocar abajo o arriba; deslizar hacia arriba o abajo | ↓ ↑ ← →, AvPág/RePág, rueda del mouse, clic abajo o arriba |
 | Mostrar u ocultar controles (libro) | Tocar el centro | Clic en el centro |
 | Avanzar un renglón | Tocar la pantalla | Clic, ↓, →, Espacio, Enter |
 | Retroceder un renglón | Borde izquierdo o botón ↑ | ↑, ←, Mayús+Espacio, botón ↑ |
@@ -99,6 +102,7 @@ Las pruebas de extremo a extremo usan documentos reales de `tests/fixtures/` y v
 - cargar un `.docx` y conservar títulos, listas, tabla, cita, imagen y saltos de página;
 - leer un PDF con texto con su numeración original (i, ii, 1…), una o dos páginas por pantalla;
 - pasar páginas con toques, deslizamiento y teclado; ir a una página o sección;
+- el modo libro en sus tres configuraciones (horizontal, horizontal con animación de página y vertical), en Word y PDF: avance y retroceso por página completa, la hoja que se dobla cuadro a cuadro (pliegue, dorso visible, sentido del movimiento y página que queda debajo), el arrastre que se completa o se devuelve, los pases rápidos y que cambiar la dirección o la animación no mueva el lugar de lectura;
 - que **cada toque avance exactamente un renglón visual** (medido de forma independiente sobre lo que se dibuja en pantalla), también entre párrafos, títulos y páginas del PDF;
 - retroceder con el borde izquierdo, el botón y el teclado;
 - recalcular renglones al cambiar letra, ancho, interlineado o girar el celular, sin perder el carácter en que se estaba;
