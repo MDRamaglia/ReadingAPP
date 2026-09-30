@@ -3,6 +3,7 @@
  * (por su contenido, no solo por la extensión) y lo deriva al importador que
  * corresponde. Todo ocurre en el dispositivo.
  */
+import { TECHNICAL_LIMITS } from '../config/plans';
 import { saveImported } from '../lib/db';
 import { ImportError, type ImportProgress, type ImportResult } from './types';
 
@@ -36,7 +37,23 @@ export function newId(): string {
   return `d${Date.now().toString(36)}${r[0]!.toString(36)}${r[1]!.toString(36)}`;
 }
 
-export async function importFile(file: File, onProgress: (p: ImportProgress) => void): Promise<ImportResult> {
+export interface ImportOptions {
+  /** Cuenta dueña del documento (sin valor: sin sesión). */
+  ownerId?: string;
+  /**
+   * Comprueba el límite de documentos del plan; lanza un error si no hay
+   * lugar. Se llama antes de convertir y otra vez justo antes de guardar.
+   */
+  checkLimit?: () => Promise<void>;
+}
+
+export async function importFile(file: File, onProgress: (p: ImportProgress) => void, opts: ImportOptions = {}): Promise<ImportResult> {
+  await opts.checkLimit?.();
+  // Límite técnico, igual para todos los planes (independiente de la cantidad de documentos).
+  if (file.size > TECHNICAL_LIMITS.maxFileBytes) {
+    const mb = Math.round(TECHNICAL_LIMITS.maxFileBytes / 1024 / 1024);
+    throw new ImportError(`«${file.name}» es demasiado grande (más de ${mb} MB).`, 'Probá con una versión más liviana del documento, por ejemplo exportándolo de nuevo como PDF.');
+  }
   const kind = await sniff(file);
   if (kind === 'doc') {
     throw new ImportError('«' + file.name + '» es un documento de Word antiguo (.doc).', DOC_HELP);
@@ -74,6 +91,8 @@ export async function importFile(file: File, onProgress: (p: ImportProgress) => 
     );
   }
   onProgress({ phase: 'save', done: 0, total: 1 });
+  await opts.checkLimit?.();
+  if (opts.ownerId) result.meta.ownerId = opts.ownerId;
   try {
     await saveImported(result.meta, file, result.blocks, result.assets);
   } catch (e) {

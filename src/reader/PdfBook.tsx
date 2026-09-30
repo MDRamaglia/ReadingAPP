@@ -20,6 +20,8 @@ interface Props {
   /** Dirección para pasar páginas y animación de hoja (solo horizontal). */
   direction: BookDirection;
   curl: boolean;
+  /** Duración de una vuelta de hoja completa (según la velocidad elegida). */
+  curlMs: number;
   handle: MutableRef<ViewHandle | null>;
   onReport: (r: ViewReport) => void;
   onEdge: (edge: 'start' | 'end') => void;
@@ -100,7 +102,7 @@ function slotsFor(pages: PageInfo[], size: Size, perView: 1 | 2, first: number):
 
 type Turn = 'none' | 'next' | 'prev' | 'next-v' | 'prev-v';
 
-export function PdfBook({ pdf, pages, initialPage, direction, curl, handle, onReport, onEdge, onToggleChrome }: Props) {
+export function PdfBook({ pdf, pages, initialPage, direction, curl, curlMs, handle, onReport, onEdge, onToggleChrome }: Props) {
   const stage = useRef<HTMLDivElement>(null);
   const cache = useRef(new PageCanvasCache(pdf));
   const [size, setSize] = useState<Size | null>(null);
@@ -165,6 +167,7 @@ export function PdfBook({ pdf, pages, initialPage, direction, curl, handle, onRe
       releaseFront: (into) => into.replaceChildren(),
     });
     turns.current = curlTurns;
+    curlTurns.speed = curlMs;
     // Acceso para pruebas automatizadas.
     (window as unknown as { __pdfTurns?: CurlTurns }).__pdfTurns = curlTurns;
 
@@ -281,6 +284,10 @@ export function PdfBook({ pdf, pages, initialPage, direction, curl, handle, onRe
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdf]);
+
+  useEffect(() => {
+    if (turns.current) turns.current.speed = curlMs;
+  }, [curlMs]);
 
   // Al desactivar la animación o pasar a vertical, se retira cualquier hoja en curso.
   useEffect(() => {
