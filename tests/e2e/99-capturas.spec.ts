@@ -29,6 +29,28 @@ test.describe('Capturas', () => {
     await page.waitForTimeout(500);
     await page.screenshot({ path: shot('04-word-libro-tabla', p) });
 
+    // Dirección para pasar página y animación de hoja, y una hoja a mitad de vuelta.
+    await page.click('[data-testid=open-settings]');
+    const curl = page.locator('[data-testid=page-curl]');
+    await curl.check();
+    await curl.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: shot('20-ajustes-libro', p) });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(700);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(40);
+    await page.evaluate(() => {
+      const c = (window as any).__flow.turns.curl;
+      c.stop();
+      c.set(0.42);
+    });
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: shot('21-hoja-doblandose', p) });
+    await page.click('[data-testid=open-settings]');
+    await page.locator('[data-testid=page-curl]').uncheck();
+    await page.keyboard.press('Escape');
+
     await toFocus(page);
     for (let i = 0; i < 6; i++) await tapAt(page, 0.7, 0.5);
     await page.waitForTimeout(500);

@@ -2,12 +2,18 @@
  * Modo libro para documentos de Word: el texto se reparte en páginas del
  * tamaño de la pantalla usando columnas CSS (una por página). En pantallas
  * anchas se ven dos páginas enfrentadas, como un libro abierto.
+ *
+ * Las páginas se pasan en horizontal o en vertical; la paginación es la misma
+ * en los dos casos, así que cambiar de dirección no mueve el texto. En
+ * horizontal, la hoja puede darse vuelta como en un libro de papel
+ * (curl.ts): para eso se mantiene una copia del texto que hace de hoja.
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { MutableRef } from 'preact/hooks';
-import type { Block, Position, Settings } from '../lib/types';
+import type { Block, BookDirection, Position, Settings } from '../lib/types';
+import { CurlTurns, type CurlLayout } from './curl';
 import { charRect, searchChar } from './domText';
-import { attachGestures } from './gestures';
+import { attachGestures, type DragInfo } from './gestures';
 import { blockElements, blocksHtml, hydrateImages } from './render';
 import type { ViewHandle, ViewReport } from './views';
 
@@ -15,6 +21,9 @@ interface Props {
   blocks: Block[];
   assetUrls: Map<string, string>;
   settings: Settings;
+  /** Dirección para pasar páginas y animación de hoja (solo horizontal). */
+  direction: BookDirection;
+  curl: boolean;
   initial: Position;
   handle: MutableRef<ViewHandle | null>;
   onReport: (r: ViewReport) => void;
@@ -42,6 +51,13 @@ class FlowEngine implements ViewHandle {
   private spread = 0;
   private pos: Position;
   private timer = 0;
+  /** Navegación vertical y animación de hoja. */
+  vertical = false;
+  private curlOn = false;
+  private turns: CurlTurns | null = null;
+  /** Copia del texto que hace de hoja al darla vuelta, con sus números de página. */
+  private ghost: { wrap: HTMLElement; flow: HTMLElement; folios: HTMLElement } | null = null;
+  private warmTimer = 0;
 
   constructor(
     private stage: HTMLElement,
@@ -110,6 +126,7 @@ class FlowEngine implements ViewHandle {
     const end = this.flow.querySelector('.flow-end')!;
     const cols = this.colOf(end.getBoundingClientRect()) + 1;
     this.pages = Math.max(1, cols);
+    this.syncGhost();
   }
 
   private get spreads() {
@@ -153,16 +170,27 @@ class FlowEngine implements ViewHandle {
    * segundos en un celular.
    */
   private show(turn: 'next' | 'prev' | null) {
-    const g = this.geom!;
-    const x = this.spread * g.perView * this.pitch;
-    this.flow.style.transform = `translateX(${-x}px)`;
+    this.place(this.spread);
     this.view.style.transform = '';
-    this.view.classList.remove('turn-next', 'turn-prev', 'snap');
+    this.view.classList.remove(...TURN_CLASSES, 'snap');
     if (turn) {
       void this.view.offsetWidth;
-      this.view.classList.add(`turn-${turn}`);
+      this.view.classList.add(`turn-${turn}${this.vertical ? '-v' : ''}`);
     }
-    this.onGeom(g, this.pages, this.spread);
+  }
+
+  /** Muestra la pantalla `i` en la vista real (sin cambiar el punto de lectura). */
+  private place(i: number) {
+    const g = this.geom!;
+    this.flow.style.transform = `translateX(${-i * g.perView * this.pitch}px)`;
+    this.onGeom(g, this.pages, i);
+  }
+
+  /** Cambia el estado a la pantalla `s` e informa la nueva posición. */
+  private commit(s: number) {
+    this.spread = s;
+    this.pos = this.posOfCol(s * this.geom!.perView);
+    this.emit();
   }
 
   private emit() {
@@ -174,6 +202,7 @@ class FlowEngine implements ViewHandle {
   }
 
   goTo(pos: Position) {
+    this.turns?.settle();
     this.pos = { ...pos };
     const col = this.pageOf(pos);
     this.spread = Math.floor(col / this.geom!.perView);
@@ -182,6 +211,7 @@ class FlowEngine implements ViewHandle {
   }
 
   goToPage(page: number) {
+    this.turns?.settle();
     const col = Math.max(0, Math.min(this.pages - 1, page));
     this.spread = Math.floor(col / this.geom!.perView);
     this.pos = this.posOfCol(this.spread * this.geom!.perView);
@@ -190,33 +220,57 @@ class FlowEngine implements ViewHandle {
   }
 
   next() {
-    if (this.spread + 1 >= this.spreads) {
-      this.edge('end');
-      this.snapBack();
-      return;
-    }
-    this.spread++;
-    this.pos = this.posOfCol(this.spread * this.geom!.perView);
-    this.show('next');
-    this.emit();
+    this.turn(1);
   }
 
   prev() {
-    if (this.spread === 0) {
-      this.edge('start');
+    this.turn(-1);
+  }
+
+  private turn(step: 1 | -1) {
+    const t = this.turns;
+    // Se suelta la hoja que se venía arrastrando en esta dirección: se completa.
+    if (t && t.dragging === (step > 0 ? 'next' : 'prev')) {
+      this.commit(this.spread + step);
+      t.dragEnd(true);
+      return;
+    }
+    t?.settle();
+    const from = this.spread;
+    const to = from + step;
+    if (to < 0 || to >= this.spreads) {
+      this.edge(step > 0 ? 'end' : 'start');
       this.snapBack();
       return;
     }
-    this.spread--;
-    this.pos = this.posOfCol(this.spread * this.geom!.perView);
-    this.show('prev');
-    this.emit();
+    this.commit(to);
+    if (this.curlOn) this.curlTurns().turn(from, to);
+    else this.show(step > 0 ? 'next' : 'prev');
   }
 
-  /** La página acompaña al dedo mientras se desliza. */
-  drag(dx: number) {
-    this.view.classList.remove('turn-next', 'turn-prev', 'snap');
-    this.view.style.transform = `translateX(${dx * 0.6}px)`;
+  /** La página acompaña al dedo mientras se desliza; con animación de hoja, la hoja se dobla. */
+  drag(d: number, info: DragInfo) {
+    if (!this.vertical && this.curlOn) {
+      const t = this.curlTurns();
+      if (!t.dragging) {
+        const to = this.spread + (d < 0 ? 1 : -1);
+        if (to >= 0 && to < this.spreads) {
+          const r = this.stage.getBoundingClientRect();
+          t.dragStart(this.spread, to, info.y0 - r.top < r.height * 0.35 ? 'top' : 'bottom');
+        }
+      }
+      if (t.dragging) {
+        t.dragMove(d);
+        return;
+      }
+    }
+    this.view.classList.remove(...TURN_CLASSES, 'snap');
+    this.view.style.transform = this.vertical ? `translateY(${d * 0.6}px)` : `translateX(${d * 0.6}px)`;
+  }
+
+  dragCancel() {
+    if (this.turns?.dragging) this.turns.dragEnd(false);
+    else this.snapBack();
   }
 
   snapBack() {
@@ -225,9 +279,121 @@ class FlowEngine implements ViewHandle {
   }
 
   relayout(settings: Settings) {
+    this.turns?.settle();
     const keep = this.pos;
     this.layout(settings);
     this.goTo(keep);
+  }
+
+  /** Dirección y animación elegidas; no cambian la paginación ni el lugar. */
+  setNav(direction: BookDirection, curl: boolean) {
+    this.vertical = direction === 'vertical';
+    const on = curl && !this.vertical;
+    if (on === this.curlOn) return;
+    this.curlOn = on;
+    clearTimeout(this.warmTimer);
+    this.turns?.settle();
+    if (on) {
+      this.warm();
+    } else {
+      this.turns?.destroy();
+      this.turns = null;
+      this.ghost = null;
+    }
+  }
+
+  /**
+   * Prepara de antemano la copia del texto que hace de hoja (y su diagramado),
+   * para que la primera vuelta no se trabe. Espera a que haya páginas.
+   */
+  warm() {
+    clearTimeout(this.warmTimer);
+    this.warmTimer = window.setTimeout(() => {
+      if (!this.curlOn) return;
+      if (!this.geom) return this.warm();
+      this.buildFront(this.spread, this.curlTurns().curl.content);
+    }, 300);
+  }
+
+  private curlTurns(): CurlTurns {
+    if (!this.turns) {
+      this.turns = new CurlTurns(this.stage, {
+        showBase: (i) => this.place(i ?? this.spread),
+        buildFront: (i, into) => this.buildFront(i, into),
+        layout: () => this.curlLayout(),
+      });
+    }
+    return this.turns;
+  }
+
+  private ensureGhost() {
+    const into = this.curlTurns().curl.content;
+    if (!this.ghost) {
+      const wrap = document.createElement('div');
+      wrap.className = 'curl-view';
+      const flow = this.flow.cloneNode(true) as HTMLElement;
+      // Sin índices de bloque: la copia no debe confundirse con el texto real.
+      flow.querySelectorAll('[data-b]').forEach((el) => el.removeAttribute('data-b'));
+      wrap.append(flow);
+      const folios = document.createElement('div');
+      this.ghost = { wrap, flow, folios };
+      this.syncGhost();
+    }
+    if (this.ghost.wrap.parentElement !== into) into.replaceChildren(this.ghost.wrap, this.ghost.folios);
+    return this.ghost;
+  }
+
+  /** La copia repite exactamente la tipografía y la paginación del texto real. */
+  private syncGhost() {
+    const g = this.ghost;
+    if (!g) return;
+    g.flow.style.cssText = this.flow.style.cssText;
+    g.flow.className = this.flow.className;
+    const v = this.view.style;
+    Object.assign(g.wrap.style, { left: v.left, top: v.top, width: v.width, height: v.height });
+  }
+
+  /** Arma en el frente la pantalla `i`: su texto, sus números de página y el lomo. */
+  private buildFront(i: number, _into: HTMLElement) {
+    const ghost = this.ensureGhost();
+    const g = this.geom!;
+    ghost.flow.style.transform = `translateX(${-i * g.perView * this.pitch}px)`;
+    const items: HTMLElement[] = [];
+    for (let k = 0; k < g.perView; k++) {
+      const n = i * g.perView + k;
+      if (n >= this.pages) continue;
+      const f = document.createElement('div');
+      f.className = 'folio';
+      f.style.left = `${g.left + k * (g.pageW + g.gap) + g.pageW / 2}px`;
+      f.textContent = String(n + 1);
+      items.push(f);
+    }
+    if (g.perView === 2) {
+      const spine = document.createElement('div');
+      spine.className = 'spine';
+      spine.style.left = `${g.left + g.pageW + g.gap / 2}px`;
+      items.push(spine);
+    }
+    ghost.folios.replaceChildren(...items);
+  }
+
+  /** La pantalla entera es la hoja; con dos páginas, gira la derecha sobre el lomo. */
+  private curlLayout(): CurlLayout {
+    const W = this.stage.clientWidth;
+    const H = this.stage.clientHeight;
+    const g = this.geom!;
+    if (g.perView === 2) {
+      const spine = Math.round(g.left + g.pageW + g.gap / 2);
+      return { sheet: { x: spine, y: 0, w: W - spine, h: H }, left: { x: 0, y: 0, w: spine, h: H } };
+    }
+    return { sheet: { x: 0, y: 0, w: W, h: H } };
+  }
+
+  destroy() {
+    clearTimeout(this.warmTimer);
+    clearTimeout(this.timer);
+    this.turns?.destroy();
+    this.turns = null;
   }
 
   schedule(settings?: Settings) {
@@ -242,7 +408,9 @@ class FlowEngine implements ViewHandle {
   }
 }
 
-export function FlowBook({ blocks, assetUrls, settings, initial, handle, onReport, onEdge, onToggleChrome }: Props) {
+const TURN_CLASSES = ['turn-next', 'turn-prev', 'turn-next-v', 'turn-prev-v'];
+
+export function FlowBook({ blocks, assetUrls, settings, direction, curl, initial, handle, onReport, onEdge, onToggleChrome }: Props) {
   const stage = useRef<HTMLDivElement>(null);
   const view = useRef<HTMLDivElement>(null);
   const flow = useRef<HTMLDivElement>(null);
@@ -263,6 +431,7 @@ export function FlowBook({ blocks, assetUrls, settings, initial, handle, onRepor
       (g, pages, spread) => setFolio({ g, pages, spread }),
     );
     e.lastSettings = settings;
+    e.setNav(direction, curl);
     engine.current = e;
     handle.current = e;
     (window as unknown as { __flow?: FlowEngine }).__flow = e;
@@ -274,19 +443,21 @@ export function FlowBook({ blocks, assetUrls, settings, initial, handle, onRepor
       e.goTo(initial);
     });
     const detach = attachGestures(stage.current!, {
-      tap: (x) => {
+      // Costados en horizontal; arriba y abajo en vertical. El centro muestra u oculta los controles.
+      tap: (x, y) => {
         const r = stage.current!.getBoundingClientRect();
-        const rel = (x - r.left) / r.width;
+        const rel = e.vertical ? (y - r.top) / r.height : (x - r.left) / r.width;
         if (rel < 0.3) e.prev();
         else if (rel > 0.7) e.next();
         else cb.current.onToggleChrome();
       },
       swipe: (dir) => {
-        if (dir === 'left') e.next();
-        else if (dir === 'right') e.prev();
+        if (dir === (e.vertical ? 'up' : 'left')) e.next();
+        else if (dir === (e.vertical ? 'down' : 'right')) e.prev();
       },
-      drag: (dx) => e.drag(dx),
-      dragCancel: () => e.snapBack(),
+      drag: (d, info) => e.drag(d, info),
+      dragCancel: () => e.dragCancel(),
+      axis: () => (e.vertical ? 'y' : 'x'),
     });
     let wheelT = 0;
     const onWheel = (ev: WheelEvent) => {
@@ -304,11 +475,16 @@ export function FlowBook({ blocks, assetUrls, settings, initial, handle, onRepor
       alive = false;
       detach();
       ro.disconnect();
+      e.destroy();
       stage.current?.removeEventListener('wheel', onWheel);
       if (handle.current === e) handle.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocks]);
+
+  useEffect(() => {
+    engine.current?.setNav(direction, curl);
+  }, [direction, curl]);
 
   useEffect(() => {
     const e = engine.current;

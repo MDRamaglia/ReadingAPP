@@ -130,6 +130,8 @@ export interface Progress {
 export type Theme = 'light' | 'sepia' | 'dark';
 export type FontFamily = 'literata' | 'atkinson';
 export type FocusContext = 'dim' | 'hide';
+/** Dirección en que se pasan las páginas del modo libro. */
+export type BookDirection = 'horizontal' | 'vertical';
 
 export interface Settings {
   fontSize: number;
@@ -139,4 +141,10 @@ export interface Settings {
   theme: Theme;
   font: FontFamily;
   focusContext: FocusContext;
+  bookDirection: BookDirection;
+  /**
+   * Animación de hoja que se dobla al pasar página. Solo se usa con la
+   * navegación horizontal, pero la preferencia se conserva en vertical.
+   */
+  pageCurl: boolean;
 }
