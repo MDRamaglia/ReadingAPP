@@ -1,7 +1,8 @@
 import { LIMITS, clamp, updateSettings } from '../lib/settings';
 import type { Settings, Theme } from '../lib/types';
 import { Sheet } from '../ui/Sheet';
-import { IconArrowsH, IconArrowsV, IconMinus, IconPlus } from '../ui/icons';
+import { IconArrowsH, IconArrowsV, IconMinus, IconPlus, IconSpark } from '../ui/icons';
+import type { CurlSpeed } from '../lib/types';
 
 const THEMES: Array<{ id: Theme; label: string }> = [
   { id: 'light', label: 'Claro' },
@@ -22,7 +23,7 @@ function widthLabel(s: Settings): string {
   return `≈ ${chars} letras por renglón${s.width * s.fontSize > available ? ' (máximo de esta pantalla)' : ''}`;
 }
 
-export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Settings; onClose: () => void; pdfBook: boolean }) {
+export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { settings: Settings; onClose: () => void; pdfBook: boolean; curlAllowed: boolean }) {
   const size = (d: number) => updateSettings({ fontSize: clamp(s.fontSize + d, LIMITS.fontSize.min, LIMITS.fontSize.max) });
   return (
     <Sheet title="Lectura" onClose={onClose} testId="settings-sheet">
@@ -103,7 +104,7 @@ export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Set
         </div>
       </div>
 
-      <BookNav s={s} />
+      <BookNav s={s} curlAllowed={curlAllowed} />
 
       <div class="field">
         <span class="field-label">Modo renglón: texto alrededor</span>
@@ -120,14 +121,21 @@ export function SettingsSheet({ settings: s, onClose, pdfBook }: { settings: Set
   );
 }
 
+const SPEEDS: Array<[CurlSpeed, string]> = [
+  ['slow', 'Lenta'],
+  ['normal', 'Normal'],
+  ['fast', 'Rápida'],
+];
+
 /**
  * Modo libro: dirección para pasar páginas y animación de hoja. La animación
- * solo existe en horizontal; en vertical el interruptor queda deshabilitado
- * pero conserva su valor para cuando se vuelva a horizontal.
+ * es del plan premium y solo existe en horizontal; en vertical (o sin
+ * premium) el interruptor queda deshabilitado pero la preferencia se conserva.
  */
-function BookNav({ s }: { s: Settings }) {
+function BookNav({ s, curlAllowed }: { s: Settings; curlAllowed: boolean }) {
   const horizontal = s.bookDirection === 'horizontal';
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const usable = horizontal && curlAllowed;
   let note = 'La hoja se dobla y descubre la página siguiente, como en un libro de papel.';
   if (!horizontal) note = 'Disponible solo al pasar páginas en horizontal.';
   else if (reduced) note = 'Tu dispositivo pide reducir el movimiento: por eso no se muestra.';
@@ -159,22 +167,54 @@ function BookNav({ s }: { s: Settings }) {
       <p class="field-note">
         {horizontal ? 'Hacia la izquierda o la derecha: tocá los costados o deslizá de lado.' : 'Hacia arriba o abajo: tocá arriba o abajo, o deslizá en vertical.'}
       </p>
-      <label class={`switch-row${horizontal ? '' : ' is-disabled'}`}>
+      <label class={`switch-row${usable ? '' : ' is-disabled'}`}>
         <span class="switch-text">
-          <span class="switch-title">Animación de página</span>
-          <small>{note}</small>
+          <span class="switch-title">
+            Animación de página {!curlAllowed && <span class="plan-pill">Premium</span>}
+          </span>
+          {curlAllowed ? (
+            <small>{note}</small>
+          ) : (
+            <small data-testid="curl-premium-note">
+              <IconSpark size={13} /> La hoja que se dobla al pasar página es parte del plan premium.{' '}
+              <a href="#/planes" data-testid="curl-see-plans">
+                Ver planes
+              </a>
+            </small>
+          )}
         </span>
         <input
           type="checkbox"
           role="switch"
           class="switch"
-          checked={s.pageCurl}
-          aria-checked={s.pageCurl}
-          disabled={!horizontal}
+          checked={curlAllowed && s.pageCurl}
+          aria-checked={curlAllowed && s.pageCurl}
+          disabled={!usable}
           onChange={(e) => updateSettings({ pageCurl: (e.currentTarget as HTMLInputElement).checked })}
           data-testid="page-curl"
         />
       </label>
+      {usable && s.pageCurl && (
+        <div class="speed">
+          <span class="field-note" id="curl-speed-label">
+            Velocidad de la animación
+          </span>
+          <div class="segmented" role="radiogroup" aria-labelledby="curl-speed-label">
+            {SPEEDS.map(([id, label]) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={s.curlSpeed === id}
+                class={s.curlSpeed === id ? 'is-on' : ''}
+                onClick={() => updateSettings({ curlSpeed: id })}
+                data-testid={`curl-speed-${id}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

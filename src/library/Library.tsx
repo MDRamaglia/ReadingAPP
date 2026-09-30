@@ -1,15 +1,21 @@
 /**
  * Biblioteca: documentos cargados, su avance y la carga de archivos nuevos.
+ * Con sesión muestra los documentos de la cuenta; sin sesión, los cargados
+ * sin cuenta en este dispositivo. La cantidad se cuenta contra el límite del
+ * plan (config/plans.ts).
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { importFile } from '../import';
 import { ocr } from '../import/ocr';
 import { ImportError, type ImportProgress, type ImportResult } from '../import/types';
-import { deleteDoc, getDoc, listDocs, progressFor } from '../lib/db';
+import { libraryUsage, planOf, type LibraryUsage } from '../lib/access';
+import { claimDeviceDocs, deleteDoc, getDoc, listDocs, progressFor } from '../lib/db';
 import type { DocMeta, Progress } from '../lib/types';
 import { OcrPanel, useOcrState } from '../reader/OcrSheet';
+import { useAccount } from '../services/account';
+import { ServiceError, isServiceError } from '../services/errors';
 import { Sheet } from '../ui/Sheet';
-import { IconLock, IconPlus, IconTrash, IconWarn } from '../ui/icons';
+import { IconLock, IconPlus, IconSpark, IconTrash, IconWarn } from '../ui/icons';
 
 const PHASES: Record<ImportProgress['phase'], string> = {
   read: 'Leyendo el archivo',
@@ -42,11 +48,23 @@ interface ImportState {
   name: string;
   progress?: ImportProgress;
   result?: ImportResult;
-  error?: { message: string; help?: string };
+  error?: { message: string; help?: string; limit?: boolean };
+}
+
+function limitMessage(u: LibraryUsage): { message: string; help: string } {
+  return {
+    message: `Alcanzaste el límite de ${u.limit} archivos del plan gratuito.`,
+    help: u.over
+      ? `Tenés ${u.count} documentos y el plan gratuito permite ${u.limit}. Podés seguir leyéndolos todos; para cargar uno nuevo, eliminá algunos o pasate a premium, que no tiene límite de cantidad.`
+      : 'Cada documento cuenta como un archivo, sin importar sus páginas. Para cargar otro, eliminá uno que ya no uses o pasate a premium, que no tiene límite de cantidad.',
+  };
 }
 
 export function Library({ onOpen }: { onOpen: (id: string) => void }) {
+  const { user, ready } = useAccount();
+  const owner = user?.id ?? null;
   const [docs, setDocs] = useState<DocMeta[] | null>(null);
+  const [deviceDocs, setDeviceDocs] = useState(0);
   const [progress, setProgress] = useState<Map<string, Progress>>(new Map());
   const [imp, setImp] = useState<ImportState | null>(null);
   const [confirm, setConfirm] = useState<DocMeta | null>(null);
@@ -56,8 +74,9 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
   const ocrState = useOcrState();
 
   const refresh = async () => {
-    const list = await listDocs();
+    const list = await listDocs(owner);
     setDocs(list);
+    setDeviceDocs(owner ? (await listDocs(null)).length : 0);
     setProgress(await progressFor(list.map((d) => d.id)));
     try {
       const est = await navigator.storage?.estimate?.();
@@ -68,8 +87,18 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
   };
 
   useEffect(() => {
-    void refresh();
-  }, []);
+    if (ready) void refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, owner]);
+
+  const quota = libraryUsage(docs?.length ?? 0, planOf(user));
+  // Lugar libre del plan (null: sin límite de cantidad).
+  const room = quota.limit === null ? null : Math.max(0, quota.limit - quota.count);
+  // Límite del plan: se vuelve a contar al empezar y justo antes de guardar.
+  const checkLimit = async () => {
+    const u = libraryUsage((await listDocs(owner)).length, planOf(user));
+    if (u.full) throw new ServiceError('limit', limitMessage(u).message);
+  };
   // El OCR en segundo plano cambia el estado de los documentos.
   useEffect(() => {
     if (!ocrState || ocrState.done === 0) return;
@@ -84,11 +113,15 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
     if (!file) return;
     setImp({ name: file.name });
     try {
-      const result = await importFile(file, (p) => setImp((s) => (s ? { ...s, progress: p } : s)));
+      const result = await importFile(file, (p) => setImp((s) => (s ? { ...s, progress: p } : s)), { ownerId: owner ?? undefined, checkLimit });
       setImp({ name: file.name, result });
       await refresh();
     } catch (e) {
-      const err = e instanceof ImportError ? { message: e.message, help: e.help } : { message: (e as Error).message ?? String(e) };
+      const err = isServiceError(e, 'limit')
+        ? { ...limitMessage(libraryUsage((await listDocs(owner)).length, planOf(user))), limit: true }
+        : e instanceof ImportError
+          ? { message: e.message, help: e.help }
+          : { message: (e as Error).message ?? String(e) };
       setImp({ name: file.name, error: err });
     } finally {
       if (input.current) input.current.value = '';
@@ -112,21 +145,36 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
         void handleFiles(e.dataTransfer?.files ?? null);
       }}
     >
-      <header class="lib-head">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+      <div class="lib-main">
+        <div class="lib-title-row">
+          <h1 class="page-title">Tu biblioteca</h1>
+          <span class={`lib-count${quota.full ? ' is-full' : ''}`} data-testid="library-count">
+            {quota.label}
           </span>
-          <div>
-            <h1 class="brand-name">Knowmadic</h1>
-            <p class="brand-tag">Un lugar para leer. Un espacio para pensar.</p>
-          </div>
         </div>
-      </header>
 
-      <main class="lib-main">
+        {owner && deviceDocs > 0 && (
+          <div class="notice" data-testid="claim-docs">
+            <p>
+              {deviceDocs === 1 ? 'Hay 1 documento cargado' : `Hay ${deviceDocs} documentos cargados`} sin cuenta en este dispositivo.
+              {room === 0 && ` Para sumarlos a tu biblioteca necesitás lugar: el plan gratuito permite ${quota.limit} archivos.`}
+              {room !== null && room > 0 && room < deviceDocs && ` Con el plan gratuito entran ${room} más: se suman los más recientes.`}
+            </p>
+            {room !== 0 && (
+              <button
+                class="btn"
+                onClick={async () => {
+                  await claimDeviceDocs(owner, room);
+                  await refresh();
+                }}
+                data-testid="claim-docs-btn"
+              >
+                {room !== null && room < deviceDocs ? `Sumar ${room} a mi biblioteca` : 'Sumarlos a mi biblioteca'}
+              </button>
+            )}
+          </div>
+        )}
+
         {recent && recentP && (
           <section class="continue" aria-label="Seguir leyendo">
             <button class="continue-card" onClick={() => onOpen(recent.id)} data-testid="continue-card">
@@ -155,12 +203,22 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
           </label>
           <p class="add-hint">Word (.docx) o PDF. {matchMedia('(pointer:fine)').matches ? 'También podés arrastrarlo aquí.' : ''}</p>
         </section>
+        {quota.full && (
+          <p class="limit-note" data-testid="limit-note">
+            <IconSpark size={16} />{' '}
+            {quota.over
+              ? `Tenés ${quota.count} documentos y el plan gratuito permite ${quota.limit}: podés seguir leyéndolos, pero para cargar nuevos tenés que liberar lugar.`
+              : `Llegaste a los ${quota.limit} archivos del plan gratuito.`}{' '}
+            <a href="#/planes">Ver el plan premium</a>
+          </p>
+        )}
 
         <section class="shelf" aria-label="Biblioteca">
           {docs && docs.length === 0 && (
             <div class="empty">
               <p class="empty-title">Tu biblioteca está vacía</p>
               <p>Cargá un documento de Word o un PDF para empezar. Se guarda solo en este dispositivo.</p>
+              {quota.limit !== null && <p class="muted">Con el plan gratuito podés tener hasta {quota.limit} documentos.</p>}
             </div>
           )}
           <ul class="doc-list">
@@ -195,7 +253,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
             })}
           </ul>
         </section>
-      </main>
+      </div>
 
       <footer class="lib-foot">
         <p>
@@ -224,9 +282,16 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                 <IconWarn size={16} /> {imp.error.message}
               </p>
               {imp.error.help && <p>{imp.error.help}</p>}
-              <button class="btn" onClick={() => setImp(null)}>
-                Entendido
-              </button>
+              <div class="row-end">
+                <button class="btn" onClick={() => setImp(null)}>
+                  Entendido
+                </button>
+                {imp.error.limit && (
+                  <a class="btn btn-primary" href="#/planes" onClick={() => setImp(null)} data-testid="limit-plans">
+                    Ver el plan premium
+                  </a>
+                )}
+              </div>
             </div>
           )}
           {imp.result && (

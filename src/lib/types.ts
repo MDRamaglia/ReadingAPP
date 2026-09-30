@@ -89,6 +89,8 @@ export interface DocMeta {
   size: number;
   addedAt: number;
   openedAt?: number;
+  /** Cuenta dueña del documento (sin valor: cargado sin sesión en este dispositivo). */
+  ownerId?: string;
   pdfKind?: PdfKind;
   pages?: PageInfo[];
   /** Hay texto suficiente para el modo concentración. */
@@ -132,6 +134,8 @@ export type FontFamily = 'literata' | 'atkinson';
 export type FocusContext = 'dim' | 'hide';
 /** Dirección en que se pasan las páginas del modo libro. */
 export type BookDirection = 'horizontal' | 'vertical';
+/** Velocidad de la animación de hoja. */
+export type CurlSpeed = 'slow' | 'normal' | 'fast';
 
 export interface Settings {
   fontSize: number;
@@ -147,4 +151,5 @@ export interface Settings {
    * navegación horizontal, pero la preferencia se conserva en vertical.
    */
   pageCurl: boolean;
+  curlSpeed: CurlSpeed;
 }

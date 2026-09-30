@@ -24,6 +24,8 @@ interface Props {
   /** Dirección para pasar páginas y animación de hoja (solo horizontal). */
   direction: BookDirection;
   curl: boolean;
+  /** Duración de una vuelta de hoja completa (según la velocidad elegida). */
+  curlMs: number;
   initial: Position;
   handle: MutableRef<ViewHandle | null>;
   onReport: (r: ViewReport) => void;
@@ -54,6 +56,7 @@ class FlowEngine implements ViewHandle {
   /** Navegación vertical y animación de hoja. */
   vertical = false;
   private curlOn = false;
+  private curlMs = 850;
   private turns: CurlTurns | null = null;
   /** Copia del texto que hace de hoja al darla vuelta, con sus números de página. */
   private ghost: { wrap: HTMLElement; flow: HTMLElement; folios: HTMLElement } | null = null;
@@ -286,7 +289,9 @@ class FlowEngine implements ViewHandle {
   }
 
   /** Dirección y animación elegidas; no cambian la paginación ni el lugar. */
-  setNav(direction: BookDirection, curl: boolean) {
+  setNav(direction: BookDirection, curl: boolean, curlMs = this.curlMs) {
+    this.curlMs = curlMs;
+    if (this.turns) this.turns.speed = curlMs;
     this.vertical = direction === 'vertical';
     const on = curl && !this.vertical;
     if (on === this.curlOn) return;
@@ -322,6 +327,7 @@ class FlowEngine implements ViewHandle {
         buildFront: (i, into) => this.buildFront(i, into),
         layout: () => this.curlLayout(),
       });
+      this.turns.speed = this.curlMs;
     }
     return this.turns;
   }
@@ -410,7 +416,7 @@ class FlowEngine implements ViewHandle {
 
 const TURN_CLASSES = ['turn-next', 'turn-prev', 'turn-next-v', 'turn-prev-v'];
 
-export function FlowBook({ blocks, assetUrls, settings, direction, curl, initial, handle, onReport, onEdge, onToggleChrome }: Props) {
+export function FlowBook({ blocks, assetUrls, settings, direction, curl, curlMs, initial, handle, onReport, onEdge, onToggleChrome }: Props) {
   const stage = useRef<HTMLDivElement>(null);
   const view = useRef<HTMLDivElement>(null);
   const flow = useRef<HTMLDivElement>(null);
@@ -431,7 +437,7 @@ export function FlowBook({ blocks, assetUrls, settings, direction, curl, initial
       (g, pages, spread) => setFolio({ g, pages, spread }),
     );
     e.lastSettings = settings;
-    e.setNav(direction, curl);
+    e.setNav(direction, curl, curlMs);
     engine.current = e;
     handle.current = e;
     (window as unknown as { __flow?: FlowEngine }).__flow = e;
@@ -483,8 +489,8 @@ export function FlowBook({ blocks, assetUrls, settings, direction, curl, initial
   }, [blocks]);
 
   useEffect(() => {
-    engine.current?.setNav(direction, curl);
-  }, [direction, curl]);
+    engine.current?.setNav(direction, curl, curlMs);
+  }, [direction, curl, curlMs]);
 
   useEffect(() => {
     const e = engine.current;

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { active, hasTouch, importAndOpen, isMobile, progressText, swipe, tapAt, toBook, toFocus, waitBookReady } from './helpers';
+import { active, asPremium, hasTouch, importAndOpen, isMobile, progressText, swipe, tapAt, toBook, toFocus, waitBookReady } from './helpers';
 
 /** Primer número de «Pág. N de M» (Word). */
 const pageNum = async (page: Page) => Number(/^Pág\. (\d+)/.exec(await progressText(page))![1]);
@@ -101,7 +101,27 @@ async function dragHold(page: Page, fromX: number, dx: number, during: () => Pro
 }
 
 test.describe('Modo libro: dirección y animación de página', () => {
-  test('por defecto pasa en horizontal y sin animación; el interruptor se deshabilita en vertical y conserva su valor', async ({ page }) => {
+  test('sin premium, la animación de página explica su acceso y lleva a los planes', async ({ page }) => {
+    await importAndOpen(page, 'ensayo.docx');
+    await waitBookReady(page);
+    await page.click('[data-testid=open-settings]');
+    const sheet = page.locator('[data-testid=settings-sheet]');
+    const curl = sheet.locator('[data-testid=page-curl]');
+    await expect(sheet.locator('[data-testid=dir-horizontal]')).toHaveAttribute('aria-checked', 'true');
+    await expect(curl).toBeDisabled();
+    await expect(curl).not.toBeChecked();
+    await expect(sheet.locator('[data-testid=curl-premium-note]')).toContainText('plan premium');
+    // El modo libro, la dirección y el modo renglón siguen disponibles.
+    await sheet.locator('[data-testid=dir-vertical]').click();
+    await expect(sheet.locator('[data-testid=dir-vertical]')).toHaveAttribute('aria-checked', 'true');
+    await sheet.locator('[data-testid=dir-horizontal]').click();
+    await sheet.locator('[data-testid=curl-see-plans]').click();
+    await expect(page).toHaveURL(/#\/planes$/);
+    await expect(page.locator('[data-testid=plans-table]')).toContainText('Animación de hoja de libro');
+  });
+
+  test('con premium: por defecto horizontal y sin animación; el interruptor se deshabilita en vertical y conserva su valor', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'ensayo.docx');
     await waitBookReady(page);
     await page.click('[data-testid=open-settings]');
@@ -114,6 +134,8 @@ test.describe('Modo libro: dirección y animación de página', () => {
     await expect(curl).toBeEnabled();
 
     await curl.check();
+    // Con la animación encendida aparecen las velocidades; «Normal» por defecto.
+    await expect(sheet.locator('[data-testid=curl-speed-normal]')).toHaveAttribute('aria-checked', 'true');
     await sheet.locator('[data-testid=dir-vertical]').click();
     await expect(curl).toBeDisabled();
     await expect(curl).toBeChecked();
@@ -122,10 +144,14 @@ test.describe('Modo libro: dirección y animación de página', () => {
     await expect(curl).toBeEnabled();
     await expect(curl).toBeChecked();
 
-    // Se guardan con las demás preferencias y sobreviven a una recarga.
+    // Se guardan con las preferencias de la cuenta y sobreviven a una recarga.
     await sheet.locator('[data-testid=dir-vertical]').click();
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('renglon.settings')!));
-    expect(saved).toMatchObject({ bookDirection: 'vertical', pageCurl: true });
+    const saved = await page.evaluate(() =>
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('renglon.settings'))
+        .map((k) => JSON.parse(localStorage.getItem(k)!)),
+    );
+    expect(saved.some((v) => v.bookDirection === 'vertical' && v.pageCurl === true)).toBe(true);
     // Sin haber avanzado no hay punto de lectura que ofrecer: se abre directamente.
     await page.reload();
     await waitBookReady(page);
@@ -135,7 +161,42 @@ test.describe('Modo libro: dirección y animación de página', () => {
     await expect(curl).toBeDisabled();
   });
 
+  test('con premium, la velocidad de la animación cambia la duración de la vuelta', async ({ page }) => {
+    await asPremium(page);
+    await importAndOpen(page, 'ensayo.docx');
+    await waitBookReady(page);
+    await setNav(page, { curl: true });
+    const turnMs = () => page.evaluate(() => (window as any).__flow.turns?.curl.turnMs ?? null);
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(turnMs).toBe(850);
+    for (const [id, ms] of [
+      ['slow', 1150],
+      ['fast', 600],
+      ['normal', 850],
+    ] as const) {
+      await page.click('[data-testid=open-settings]');
+      await page.locator(`[data-testid=curl-speed-${id}]`).click();
+      await page.keyboard.press('Escape');
+      await expect.poll(turnMs).toBe(ms);
+    }
+    // Una vuelta lenta dura más que una rápida (medida en la página).
+    const measure = async () => {
+      const frames = await record(page, () => page.keyboard.press('ArrowRight'), 1700);
+      return frames.filter((f) => f.visible).length;
+    };
+    await page.click('[data-testid=open-settings]');
+    await page.locator('[data-testid=curl-speed-slow]').click();
+    await page.keyboard.press('Escape');
+    const slow = await measure();
+    await page.click('[data-testid=open-settings]');
+    await page.locator('[data-testid=curl-speed-fast]').click();
+    await page.keyboard.press('Escape');
+    const fast = await measure();
+    expect(slow).toBeGreaterThan(fast);
+  });
+
   test('vertical: pasa páginas completas hacia arriba y abajo con deslizamiento, toques, teclado y rueda', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'ensayo.docx');
     await waitBookReady(page);
     const step = isMobile(page) ? 1 : 2;
@@ -203,6 +264,7 @@ test.describe('Modo libro: dirección y animación de página', () => {
   });
 
   test('horizontal con animación: la hoja se dobla, descubre la siguiente y vuelve al retroceder (Word)', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'ensayo.docx');
     await waitBookReady(page);
     const step = isMobile(page) ? 1 : 2;
@@ -231,6 +293,7 @@ test.describe('Modo libro: dirección y animación de página', () => {
   });
 
   test('horizontal con animación: pases rápidos terminan en la página correcta, sin hojas colgadas', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'ensayo.docx');
     await waitBookReady(page);
     const step = isMobile(page) ? 1 : 2;
@@ -253,6 +316,7 @@ test.describe('Modo libro: dirección y animación de página', () => {
   });
 
   test('horizontal con animación: la hoja sigue al dedo y se completa o se devuelve al soltar', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'ensayo.docx');
     await waitBookReady(page);
     const step = isMobile(page) ? 1 : 2;
@@ -289,6 +353,7 @@ test.describe('Modo libro: dirección y animación de página', () => {
   });
 
   test('horizontal con animación en PDF: la página original se dobla al avanzar y al retroceder', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'texto.pdf');
     await waitBookReady(page);
     await setNav(page, { curl: true });
@@ -304,13 +369,20 @@ test.describe('Modo libro: dirección y animación de página', () => {
     // Pases rápidos: al final se ve la página correcta, con su dibujo.
     for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight');
     await expect.poll(() => curlHidden(page)).toBe(true);
-    const label = (await progressText(page)).match(/^Pág\. ([^\s–]+)/)![1]!;
     await expect(page.locator('.pdf-stage > .pdf-spread .pdf-page.is-ready canvas').first()).toBeVisible();
-    expect((await baseFolios(page)).split(',')[0]).toBe(label);
+    // El indicador se actualiza al terminar el último pase: se espera a que coincida con la página dibujada.
+    await expect
+      .poll(async () => {
+        const label = (await progressText(page)).match(/^Pág\. ([^\s–]+)/)?.[1];
+        return label === (await baseFolios(page)).split(',')[0];
+      })
+      .toBe(true);
+    expect(await progressText(page)).not.toBe(first);
     expect(second).not.toBe(first);
   });
 
   test('cambiar la dirección o la animación conserva la posición', async ({ page }) => {
+    await asPremium(page);
     for (const file of ['ensayo.docx', 'texto.pdf']) {
       await importAndOpen(page, file);
       await waitBookReady(page);
@@ -330,6 +402,7 @@ test.describe('Modo libro: dirección y animación de página', () => {
   });
 
   test('el modo renglón no cambia con la navegación vertical ni con la animación', async ({ page }) => {
+    await asPremium(page);
     await importAndOpen(page, 'ensayo.docx');
     await waitBookReady(page);
     await setNav(page, { curl: true, direction: 'vertical' });

@@ -46,9 +46,29 @@ export function db(): Promise<IDBPDatabase<RenglonDB>> {
   return dbp;
 }
 
-export async function listDocs(): Promise<DocMeta[]> {
-  const docs = await (await db()).getAll('docs');
+/**
+ * Documentos de la biblioteca. Con `owner` se filtran por cuenta: null son
+ * los cargados sin sesión en este dispositivo.
+ */
+export async function listDocs(owner?: string | null): Promise<DocMeta[]> {
+  const all = await (await db()).getAll('docs');
+  const docs = owner === undefined ? all : all.filter((d) => (d.ownerId ?? null) === owner);
   return docs.sort((a, b) => (b.openedAt ?? b.addedAt) - (a.openedAt ?? a.addedAt));
+}
+
+/**
+ * Suma a una cuenta los documentos cargados sin sesión en este dispositivo,
+ * los más recientes primero, hasta `max` (el lugar que deja el plan; null: todos).
+ */
+export async function claimDeviceDocs(ownerId: string, max: number | null = null): Promise<number> {
+  const d = await db();
+  const tx = d.transaction('docs', 'readwrite');
+  const docs = (await tx.store.getAll())
+    .filter((m) => !m.ownerId)
+    .sort((a, b) => (b.openedAt ?? b.addedAt) - (a.openedAt ?? a.addedAt))
+    .slice(0, max ?? undefined);
+  await Promise.all([...docs.map((m) => tx.store.put({ ...m, ownerId })), tx.done]);
+  return docs.length;
 }
 
 export async function getDoc(id: string): Promise<DocMeta | undefined> {

@@ -6,7 +6,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { docAssets, getBlocks, getDoc, getFile, getProgress, mirrorProgress, putDoc, saveProgress } from '../lib/db';
 import { closePdf, openPdf, type PDFDocumentProxy } from '../lib/pdfjs';
-import { curlEnabled, getSettings, useSettings } from '../lib/settings';
+import { allowed } from '../lib/access';
+import { CURL_MS, curlEnabled, getSettings, useSettings } from '../lib/settings';
+import { useAccount } from '../services/account';
 import type { Block, DocMeta, Position, Progress, ReadMode } from '../lib/types';
 import { IconBook, IconLibrary, IconLine, IconPage, IconToc, IconType, IconUp, IconWarn, IconScan } from '../ui/icons';
 import { FlowBook } from './FlowBook';
@@ -51,6 +53,11 @@ async function loadDoc(id: string): Promise<Loaded> {
 
 export function Reader({ docId, onExit }: { docId: string; onExit: () => void }) {
   const settings = useSettings();
+  const { user } = useAccount();
+  // La animación de hoja es del plan premium (config/plans.ts).
+  const curlAllowed = allowed('pageCurl', user);
+  const curl = curlAllowed && curlEnabled(settings);
+  const curlMs = CURL_MS[settings.curlSpeed];
   const [doc, setDoc] = useState<Loaded | null>(null);
   const [error, setError] = useState('');
   const [resume, setResume] = useState<Progress | null>(null);
@@ -450,7 +457,8 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
             pages={meta.pages ?? []}
             initialPage={initial.page ?? pageOfPos(blocks, initial) ?? 0}
             direction={settings.bookDirection}
-            curl={curlEnabled(settings)}
+            curl={curl}
+            curlMs={curlMs}
             handle={handle}
             onReport={onReport}
             onEdge={onEdge}
@@ -463,7 +471,8 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
             assetUrls={urls}
             settings={settings}
             direction={settings.bookDirection}
-            curl={curlEnabled(settings)}
+            curl={curl}
+            curlMs={curlMs}
             initial={initial}
             handle={handle}
             onReport={onReport}
@@ -552,7 +561,7 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
         </nav>
       </footer>
 
-      {sheet === 'settings' && <SettingsSheet settings={settings} onClose={() => setSheet(null)} pdfBook={isPdf && mode === 'book'} />}
+      {sheet === 'settings' && <SettingsSheet settings={settings} onClose={() => setSheet(null)} pdfBook={isPdf && mode === 'book'} curlAllowed={curlAllowed} />}
       {sheet === 'toc' && (
         <TocSheet
           meta={meta}

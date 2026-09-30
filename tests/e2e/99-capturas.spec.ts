@@ -4,7 +4,7 @@
  * demás pruebas).
  */
 import { expect, test } from '@playwright/test';
-import { artifacts, importAndOpen, importFile, tapAt, toFocus, waitBookReady } from './helpers';
+import { artifacts, asPremium, importAndOpen, importFile, setPlan, signOut, signUp, tapAt, toFocus, waitBookReady } from './helpers';
 
 const shot = (name: string, project: string) => artifacts(`capturas/${project}-${name}.png`);
 // Las hojas entran con una animación breve: se espera a que termine antes de capturar.
@@ -15,6 +15,9 @@ test.describe('Capturas', () => {
     const p = info.project.name;
     await page.goto('/');
     await page.screenshot({ path: shot('01-biblioteca-vacia', p) });
+    // La animación de hoja es premium: el recorrido se hace con una cuenta premium de prueba.
+    await asPremium(page);
+    await page.goto('/');
 
     await importFile(page, 'ensayo.docx');
     await settle(page);
@@ -122,5 +125,60 @@ test.describe('Capturas', () => {
     await expect(page.locator('[data-testid=resume]')).toBeVisible();
     await settle(page);
     await page.screenshot({ path: shot('19-continuar', p) });
+  });
+
+  test('cuentas, reseñas, Reading Club y planes', async ({ page }, info) => {
+    const p = info.project.name;
+    await page.goto('/#/cuenta/registro');
+    await page.screenshot({ path: shot('30-registro', p) });
+
+    // Dos reseñas de una persona y el like de otra.
+    await signUp(page, `ana${p}`);
+    const reviews = [
+      { book: 'Cien años de soledad', author: 'Gabriel García Márquez', category: 'Novela', title: 'Macondo como espejo', body: 'Una saga familiar que se lee como la historia de un continente. La prosa es tan precisa como desbordante.' },
+      { book: 'El túnel', author: 'Ernesto Sábato', category: 'Novela', title: 'Obsesión en primera persona', body: 'Castel lo cuenta todo desde el principio.', spoiler: true },
+    ];
+    for (const r of reviews) {
+      await page.goto('/#/resenas/nueva');
+      await page.fill('[name=bookTitle]', r.book);
+      await page.fill('[name=bookAuthor]', r.author);
+      await page.selectOption('[name=category]', r.category);
+      await page.fill('[name=title]', r.title);
+      await page.fill('[name=body]', r.body);
+      if (r.spoiler) await page.check('[name=spoiler]');
+      if (r === reviews[0]) await page.screenshot({ path: shot('31-resena-nueva', p) });
+      await page.click('[data-testid=review-submit]');
+      await expect(page.locator('[data-testid=review-full]')).toBeVisible();
+    }
+    await signOut(page);
+    await signUp(page, `beto${p}`);
+    await page.goto('/#/resenas');
+    const like = page.locator('[data-testid=review-card]', { hasText: 'Macondo' }).locator('[data-testid=like]');
+    await like.click();
+    await expect(like).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({ path: shot('32-resenas', p) });
+
+    // Plan gratuito: la animación y el Reading Club muestran cómo acceder.
+    await page.goto('/#/club');
+    await page.screenshot({ path: shot('33-club-sin-premium', p) });
+    await page.goto('/#/planes');
+    await page.screenshot({ path: shot('34-planes', p), fullPage: true });
+
+    // Premium: el Reading Club por dentro.
+    await setPlan(page, 'premium');
+    await page.goto('/#/club/nueva');
+    await page.fill('[name=title]', '¿Por dónde empezar con Borges?');
+    await page.selectOption('[name=category]', 'Autores');
+    await page.fill('[name=body]', 'Leí algunos cuentos sueltos y quiero ordenarme. ¿Ficciones o El Aleph primero?');
+    await page.click('[data-testid=thread-submit]');
+    await expect(page.locator('[data-testid=thread-full]')).toBeVisible();
+    await page.fill('[name=reply]', 'Ficciones, sin dudas. «Tlön» y «Pierre Menard» son la mejor puerta de entrada.');
+    await page.click('[data-testid=reply-submit]');
+    await expect(page.locator('[data-testid=reply]')).toBeVisible();
+    await page.screenshot({ path: shot('35-club-conversacion', p) });
+    await page.goto('/#/club');
+    await page.screenshot({ path: shot('36-club', p) });
+    await page.goto('/#/cuenta');
+    await page.screenshot({ path: shot('37-perfil', p), fullPage: true });
   });
 });

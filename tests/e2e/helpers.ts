@@ -155,3 +155,46 @@ export const readDb = (page: Page) =>
   );
 
 export const isMobile = (page: Page) => (page.viewportSize()?.width ?? 1000) < 700;
+
+// ——— Cuentas (servicio local de prueba) ———
+
+let userSeq = 0;
+/** Crea una cuenta de prueba y deja la sesión iniciada. Activa las herramientas de desarrollo. */
+export async function signUp(page: Page, name = `lector${Date.now().toString(36)}${userSeq++}`, password = 'secreto123') {
+  await page.goto('/?dev=1#/cuenta/registro');
+  await page.fill('[name=username]', name);
+  await page.fill('[name=email]', `${name}@prueba.com`);
+  await page.fill('[name=password]', password);
+  await page.fill('[name=confirm]', password);
+  await page.click('[data-testid=signup-submit]');
+  await expect(page.locator('[data-testid=plan-card]')).toBeVisible();
+  return { name, email: `${name}@prueba.com`, password };
+}
+
+export async function signIn(page: Page, email: string, password = 'secreto123') {
+  await page.goto('/#/cuenta/ingresar');
+  await page.fill('[name=email]', email);
+  await page.fill('[name=password]', password);
+  await page.click('[data-testid=signin-submit]');
+  await expect(page.locator('[data-testid=plan-card]')).toBeVisible();
+}
+
+export async function signOut(page: Page) {
+  await page.goto('/#/cuenta');
+  await page.click('[data-testid=signout]');
+  await expect(page.locator('[data-testid=account-chip]')).toContainText('Ingresar');
+}
+
+/** Mecanismo exclusivo de desarrollo: cambia el plan de la cuenta de prueba. */
+export async function setPlan(page: Page, plan: 'free' | 'premium') {
+  await page.click('[data-testid=dev-toggle]');
+  await page.click(`[data-testid=dev-plan-${plan}]`);
+  await expect(page.locator(`[data-testid=dev-plan-${plan}]`)).toHaveAttribute('aria-checked', 'true');
+  await page.click('[data-testid=dev-toggle]');
+}
+
+export async function asPremium(page: Page) {
+  const u = await signUp(page);
+  await setPlan(page, 'premium');
+  return u;
+}

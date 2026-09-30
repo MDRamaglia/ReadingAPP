@@ -10,7 +10,11 @@ export const DEFAULT_SETTINGS: Settings = {
   focusContext: 'dim',
   bookDirection: 'horizontal',
   pageCurl: false,
+  curlSpeed: 'normal',
 };
+
+/** Duración de una vuelta de hoja completa, en milisegundos, según la velocidad elegida. */
+export const CURL_MS: Record<Settings['curlSpeed'], number> = { slow: 1150, normal: 850, fast: 600 };
 
 export const LIMITS = {
   fontSize: { min: 14, max: 34, step: 1 },
@@ -19,14 +23,22 @@ export const LIMITS = {
 };
 
 const KEY = 'renglon.settings';
+/** Sin sesión, las preferencias del dispositivo; con sesión, las de esa cuenta. */
+let scope: string | null = null;
+const keyFor = (userId: string | null) => (userId ? `${KEY}.u.${userId}` : KEY);
 
-function load(): Settings {
+function stored(key: string): Partial<Settings> | null {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) };
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as Partial<Settings>) : null;
   } catch {
-    /* sin almacenamiento: valores por defecto */
+    return null;
   }
+}
+
+function load(key = keyFor(scope)): Settings {
+  const saved = stored(key);
+  if (saved) return { ...DEFAULT_SETTINGS, ...saved };
   // Primera vez: se respeta el tema del sistema y, en pantallas chicas, una letra algo menor.
   const dark = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
   const small = typeof innerWidth === 'number' && innerWidth < 420;
@@ -40,13 +52,34 @@ export function getSettings(): Settings {
   return current;
 }
 
-export function updateSettings(patch: Partial<Settings>): void {
-  current = { ...current, ...patch };
+function save() {
   try {
-    localStorage.setItem(KEY, JSON.stringify(current));
+    localStorage.setItem(keyFor(scope), JSON.stringify(current));
   } catch {
     /* se mantiene en memoria */
   }
+}
+
+export function updateSettings(patch: Partial<Settings>): void {
+  current = { ...current, ...patch };
+  save();
+  applyTheme(current);
+  listeners.forEach((l) => l(current));
+}
+
+/**
+ * Cambia de quién son las preferencias (al iniciar o cerrar sesión). Una
+ * cuenta nueva en este dispositivo empieza con las preferencias que había.
+ * Cuando exista servidor, aquí se sincronizarán con la cuenta.
+ */
+export function setSettingsScope(userId: string | null): void {
+  if (userId === scope) return;
+  // Solo una cuenta que todavía no tiene preferencias hereda las actuales; al
+  // cerrar sesión se vuelve a las del dispositivo (o a las iniciales).
+  const inherit = !!userId && !stored(keyFor(userId));
+  scope = userId;
+  if (inherit) save();
+  else current = load();
   applyTheme(current);
   listeners.forEach((l) => l(current));
 }

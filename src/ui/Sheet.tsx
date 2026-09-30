@@ -14,13 +14,17 @@ interface Props {
 /** Hoja inferior en el celular, diálogo centrado en pantallas grandes. */
 export function Sheet({ title, onClose, children, wide, testId }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  // Se lee la función vigente al apretar la tecla: si la hoja pasa de «cargando»
+  // (sin cierre) a «listo», Escape funciona desde el primer instante.
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     ref.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onClose) {
+      if (e.key === 'Escape' && close.current) {
         e.stopPropagation();
-        onClose();
+        close.current();
       }
     };
     window.addEventListener('keydown', onKey, true);
@@ -28,7 +32,7 @@ export function Sheet({ title, onClose, children, wide, testId }: Props) {
       window.removeEventListener('keydown', onKey, true);
       prev?.focus?.();
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div class="sheet-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose?.()}>

@@ -144,6 +144,8 @@ export class PageCurl {
   private corner: Corner = 'bottom';
   private raf = 0;
   private anim: { from: number; to: number; t0: number; ms: number; done: () => void } | null = null;
+  /** Duración de una vuelta completa (de t = 0 a t = 1). */
+  turnMs = 850;
   t = 0;
 
   constructor(stage: HTMLElement) {
@@ -245,7 +247,7 @@ export class PageCurl {
   animateTo(to: number, done: () => void) {
     this.stop();
     const from = this.t;
-    const ms = Math.max(180, 640 * Math.abs(to - from));
+    const ms = Math.max(180, this.turnMs * Math.abs(to - from));
     this.anim = { from, to, t0: performance.now(), ms, done };
     const step = (now: number) => {
       const a = this.anim;
@@ -319,6 +321,11 @@ export class CurlTurns {
     private host: TurnHost,
   ) {
     this.curl = new PageCurl(stage);
+  }
+
+  /** Duración de una vuelta completa; las vueltas a medias duran en proporción. */
+  set speed(ms: number) {
+    this.curl.turnMs = ms;
   }
 
   /** Dirección del arrastre en curso, si lo hay. */

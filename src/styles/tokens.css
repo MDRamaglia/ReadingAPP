@@ -21,6 +21,11 @@
   --desk: #e6ecf5;
   --shadow: 0 14px 36px -10px rgba(10, 25, 55, 0.28);
   --page-shadow: 0 1px 2px rgba(10, 25, 55, 0.08), 0 10px 28px -8px rgba(10, 25, 55, 0.22);
+  /* Logo (docs/marca/): azul de la hoja, marino de la hoja de atrás y del logotipo. */
+  --mark-front: #0770fc;
+  --mark-back: #051c42;
+  --mark-curl: #ffffff;
+  --brand-word: #051c42;
   color-scheme: light;
 }
 
@@ -62,5 +67,8 @@
   --desk: #05070c;
   --shadow: 0 14px 36px -10px rgba(0, 0, 0, 0.7);
   --page-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.7);
+  /* Sobre fondo oscuro, la hoja de atrás y el logotipo se aclaran para verse. */
+  --mark-back: #2f5694;
+  --brand-word: #e7ecf3;
   color-scheme: dark;
 }
