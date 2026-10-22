@@ -12,7 +12,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | T04 | Herramienta de cobros | RevenueCat: una integración para las dos tiendas, gratis hasta USD 2.500 por mes | Servidor |
 | T05 | Precios y planes (mensual y anual) por mercado | Propuesta por mercado: Argentina, resto de Latinoamérica, Brasil y países de habla inglesa | Producto y precios |
 | T06 | Variante del español: voseo (Argentina) o neutro (resto de Latinoamérica) | La app hoy usa voseo. Opción: «es-AR» con voseo y «es-419» neutro | Localización |
-| T07 | Países del primer lanzamiento | Empezar por América, sin la Unión Europea, para no sumar DSA y RGPD al principio | Requisitos de tiendas y Legal |
+| T07 | Países del primer lanzamiento | Empezar por América, sin la Unión Europea, para no sumar DSA y RGPD al principio. **Ojo:** en Colombia y Perú el IVA queda a cargo del desarrollador aunque esté en el exterior; conviene dejarlos para después, salvo que el contador diga otra cosa | Requisitos de tiendas, Legal y Contable |
 
 ## Tareas
 
@@ -34,13 +34,13 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P14 | Formularios de Play: seguridad de datos, clasificación, público objetivo y anuncios | Requisitos de tiendas y Legal | P02, P04 | pendiente |
 | P15 | Reclutar al menos 12 personas para la prueba cerrada de 14 días | Marketing y Titular | — | pendiente |
 | P16 | Inscripción de la base de datos en la AAIP | Legal (prepara la guía, en curso) y Titular (trámite) | P02 | en curso (guía) |
-| P17 | Alta impositiva, facturación de exportación, W-8BEN y cuenta en dólares | Contable (prepara las preguntas para el contador, en curso), Titular y contador | — | en curso |
+| P17 | Alta impositiva, facturación, W-8BEN y cuenta en dólares. Las preguntas para el contador están listas en `docs/impuestos/preguntas-para-el-contador.md`; el titular completa la sección 1 y lo lleva a la reunión | Titular y contador | — | en curso |
 | P18 | Registro de la marca elegida (INPI Argentina y Brasil) | Legal y Titular | T01 | pendiente |
 | P19 | Plan de pruebas y lista de control de publicación | QA, sobre la lista de control de Requisitos | P22 | pendiente |
 | P20 | Medición de uso y errores, con consentimiento | Servidor y Legal | P02 | pendiente |
-| P21 | Crear la cuenta personal de Google Play: pago, verificación de identidad y dispositivo | Titular, con la guía de Requisitos | P23 | pendiente |
+| P21 | Crear la cuenta personal de Google Play: pago, verificación de identidad y dispositivo. Antes, decidir qué domicilio declarar (queda público al cobrar), el nombre de desarrollador y un correo de soporte provisorio. **Ojo:** si en un año no se envía ninguna app a revisión, Google cierra la cuenta | Titular, con la guía de Requisitos | P23 (hecha) | pendiente |
 | P22 | Lista de control oficial de Google Play contrastada con el estado real de la app | Requisitos de tiendas | — | en curso |
-| P23 | Guía paso a paso para crear la cuenta personal y explicación de la prueba cerrada | Requisitos de tiendas | — | en curso |
+| P23 | Guía paso a paso para crear la cuenta personal y explicación de la prueba cerrada (`docs/requisitos/guia-cuenta-google-play.md`) | Requisitos de tiendas | — | hecho |
 
 ## Para más adelante
 

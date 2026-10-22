@@ -85,13 +85,22 @@ Verificados el 22 de octubre de 2026. Las reglas cambian seguido: antes de actua
 
 **Cambios**
 - Comunicación «A» 8481 del BCRA (septiembre de 2026): las personas humanas que exportan servicios pueden acreditar los dólares en una cuenta propia en dólares, en un banco local, sin venderlos.
-- Se eliminó el tope anual de USD 36.000.
+- Se eliminó el tope anual de USD 36.000. Según la mayoría de las fuentes secundarias, lo hizo la Comunicación «A» 8330 (septiembre de 2025); la «A» 8481 suprimió además la lista cerrada de códigos. Falta verificarlo en el texto ordenado del BCRA.
 - Fuente secundaria: estudio Allende & Brea. [Fuente](https://allende.com/bancario/el-bcra-flexibiliza-el-cobro-de-exportaciones-de-servicios-y-ajusta-reglas-de-acceso-al-mercado-de-cambios-09-15-2026/)
 
 **Impuestos**
-- Lo cobrado a las tiendas es exportación de servicios: factura E, sin IVA.
+- **Corrección (22/10/2026).** No todo lo cobrado por Google Play es necesariamente exportación.
+  - Según el contrato de distribución (sección 3.4), Google es el vendedor solo en ciertos países; en el resto, el vendedor es el desarrollador. La sección 3.5 dice que, salvo excepciones, el desarrollador es responsable de los impuestos de la venta. [Fuente](https://play.google/developer-distribution-agreement.html)
+  - Argentina no figura entre los países donde Google se ocupa del IVA. [Fuente](https://support.google.com/googleplay/android-developer/answer/138000)
+  - El encuadre de las ventas a usuarios en Argentina (y de las del exterior) lo define el contador: pregunta B1 de `docs/impuestos/preguntas-para-el-contador.md`.
 - La venta web en Argentina tiene IVA e Ingresos Brutos.
 - El régimen lo define el contador (fuentes secundarias).
+
+**IVA de otros países (Google Play).** Según la ayuda de Play Console ([fuente](https://support.google.com/googleplay/android-developer/answer/138000)):
+- Google se ocupa del IVA en México y Chile cuando el desarrollador está fuera de esos países.
+- **En Colombia y Perú, el IVA sigue a cargo del desarrollador**, aunque esté en el exterior.
+- Brasil no tiene detalle.
+- Esto pesa en la elección de países (T07).
 
 **Estados Unidos**
 - No hay convenio de doble imposición con Argentina.
