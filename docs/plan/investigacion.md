@@ -32,6 +32,10 @@ Verificados el 22 de octubre de 2026. Las reglas cambian seguido: antes de actua
 - Los grupos de edad son 13-15, 16-17 y 18+.
 - El grupo de 16-17 puede considerarse de menores en algunos países. [Fuente](https://support.google.com/googleplay/android-developer/answer/9867159)
 
+**Ficha de la tienda**
+- Límites: nombre de la app, 30 caracteres; descripción breve, 80; descripción completa, 4000. [Fuente](https://support.google.com/googleplay/android-developer/answer/9859152)
+- **Fichas personalizadas por país:** cambian el nombre, el ícono, las descripciones y los gráficos de la ficha. Cada país admite una sola ficha personalizada, y contacto, política de privacidad y categoría son comunes a todas. [Fuente](https://support.google.com/googleplay/android-developer/answer/9867158)
+
 **Política de pagos**
 - Lo digital se vende con la facturación de Google Play.
 - No se puede dirigir a pagar afuera, salvo programas en EE. UU. y la Unión Europea.

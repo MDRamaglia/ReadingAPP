@@ -6,7 +6,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 
 | # | Decisión | Propuesta del equipo | Prepara |
 |---|---|---|---|
-| T01 | **Nombre de la app**: mantener «Knowmadic» (prioridad, D11) o cambiarlo antes de publicar | Ver `docs/legal/busqueda-de-marca.md`. En curso: nombres alternativos (Marketing) y matriz de riesgos con recomendación (Legal) | Legal y Marketing |
+| T01 | **Nombre de la app**: mantener «Knowmadic» (prioridad, D11) o cambiarlo antes de publicar | Ver `docs/legal/busqueda-de-marca.md`. Marketing entregó la lista corta (`docs/marketing/nombres-candidatos.md`): Bookmadic encabeza las variantes. Opción intermedia: ficha de Google Play con otro nombre en EE. UU. y Canadá, aunque dentro de la app el nombre depende del idioma. En curso: matriz de riesgos con recomendación (Legal) | Legal y Marketing |
 | T02 | Proveedor del servidor | Supabase: autenticación con correo, Postgres con reglas por fila; encaja con `docs/backend.md`. En curso: análisis comparativo de T02, T03 y T04 | Servidor |
 | T03 | Empaquetado para Android | Capacitor: sirve después para iPhone y permite compras nativas | Desarrollo app |
 | T04 | Herramienta de cobros | RevenueCat: una integración para las dos tiendas, gratis hasta USD 2.500 por mes | Servidor |
@@ -30,7 +30,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P10 | Internacionalización: estructura de idiomas con el español como base (en curso); textos en en y pt (después) | Desarrollo app y Localización | T06 para la variante del español | en curso |
 | P11 | Migración de los datos locales (cuentas de prueba, preferencias y biblioteca) a la cuenta real | Desarrollo app y Servidor | P02 | pendiente |
 | P12 | Dominio propio y correo de soporte | Titular (compra) y Servidor (configuración) | T01 | pendiente |
-| P13 | Ficha de Google Play en tres idiomas: textos, capturas y gráficos | Marketing, Diseño y Localización | T01 | pendiente |
+| P13 | Ficha de Google Play en tres idiomas: textos, capturas y gráficos. El nombre tiene un máximo de 30 caracteres: «Knowmadic: lector PDF y Word» entra, la versión con «de» no. Falta saber si se puede usar «Word» | Marketing, Diseño y Localización | T01 | pendiente |
 | P14 | Formularios de Play: seguridad de datos, clasificación, público objetivo y anuncios | Requisitos de tiendas y Legal | P02, P04 | pendiente |
 | P15 | Reclutar al menos 12 personas para la prueba cerrada de 14 días | Marketing y Titular | — | pendiente |
 | P16 | Inscripción de la base de datos en la AAIP | Legal (prepara la guía, en curso) y Titular (trámite) | P02 | en curso (guía) |
