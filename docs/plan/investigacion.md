@@ -29,7 +29,7 @@ Verificados el 22 de octubre de 2026. Las reglas cambian seguido: antes de actua
 - Moderar y actuar. [Fuente](https://support.google.com/googleplay/android-developer/answer/9876937)
 
 **Público y clasificación**
-- Los grupos de edad son 13-15, 16-17 y 18+.
+- Los grupos de edad son «5 y menos», 6-8, 9-12, 13-15, 16-17 y 18+. Se declaran los grupos para los que la app está diseñada, no todos los que podrían usarla. La política de Familias se activa si se declara a menores de 13. Ver `docs/requisitos/google-play.md`, sección 3.
 - El grupo de 16-17 puede considerarse de menores en algunos países. [Fuente](https://support.google.com/googleplay/android-developer/answer/9867159)
 
 **Ficha de la tienda**

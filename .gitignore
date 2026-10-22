@@ -7,3 +7,8 @@ tests/.artifacts/
 *.log
 .DS_Store
 __pycache__/
+
+# Claves de firma de Android: nunca al repositorio
+*.jks
+*.keystore
+keystore.properties
