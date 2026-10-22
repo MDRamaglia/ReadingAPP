@@ -10,7 +10,7 @@ Se cumple cuando estén terminadas todas estas condiciones, y no antes.
 - Servidor real: registro, ingreso, recuperación de contraseña por correo, reseñas, likes y Reading Club guardados en el servidor.
 - Borrado de cuenta dentro de la app y por una página web.
 - Moderación: denunciar contenido, bloquear usuarios, filtrar lo objetable y una cola de revisión con respuesta a tiempo.
-- Control de edad al registrarse (16 años o más), coherente con la clasificación de la tienda.
+- Control de edad para el Reading Club (16 años o más). El registro es libre (decisión D09), coherente con el público objetivo y la clasificación declarados en la tienda.
 
 **Cobro**
 - Plan premium cobrado con Google Play Billing y **validado en el servidor**, con restauración de compras y enlace para gestionar la suscripción.
