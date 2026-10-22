@@ -168,7 +168,8 @@ src/
   dev/        panel de desarrollo para probar planes
   lib/        base local (IndexedDB), ajustes, permisos por plan, utilidades de texto, carga de pdf.js
   styles/     tipografía, temas y diseño
-docs/         estado del servidor y guía de integración; logo original
+docs/         plan de publicación y monetización (docs/plan/), servidor, legal y logo original
+.claude/agents/  roles del equipo de trabajo (ver docs/plan/equipo.md)
 tests/
   e2e/        pruebas de extremo a extremo (Playwright)
   unit/       pruebas unitarias (Vitest)
