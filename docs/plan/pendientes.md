@@ -7,9 +7,9 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | # | Decisión | Propuesta del equipo | Prepara |
 |---|---|---|---|
 | T01 | **Nombre de la app**: mantener «Knowmadic» (prioridad, D11) o cambiarlo antes de publicar | Ver `docs/legal/busqueda-de-marca.md`. Marketing entregó la lista corta (`docs/marketing/nombres-candidatos.md`): Bookmadic encabeza las variantes. Opción intermedia: ficha de Google Play con otro nombre en EE. UU. y Canadá, aunque dentro de la app el nombre depende del idioma. En curso: matriz de riesgos con recomendación (Legal) | Legal y Marketing |
-| T02 | Proveedor del servidor | Supabase: autenticación con correo, Postgres con reglas por fila; encaja con `docs/backend.md`. En curso: análisis comparativo de T02, T03 y T04 | Servidor |
-| T03 | Empaquetado para Android | Capacitor: sirve después para iPhone y permite compras nativas | Desarrollo app |
-| T04 | Herramienta de cobros | RevenueCat: una integración para las dos tiendas, gratis hasta USD 2.500 por mes | Servidor |
+| T02 | Proveedor del servidor | **Listo para decidir:** `docs/tecnico/decision-servidor-empaquetado-cobros.md` recomienda Supabase (gratuito para desarrollar; Pro, USD 25 por mes, antes de la prueba cerrada), con un proveedor de correo aparte (Resend o Amazon SES). **Región:** una de la Unión Europea (adecuada para Argentina y Brasil) o São Paulo (menor latencia); antes, Legal define el mecanismo de transferencia | Servidor |
+| T03 | Empaquetado para Android | **Listo para decidir:** Capacitor 8. Cobro nativo, funciona sin conexión y sirve después para el iPhone. El nombre del paquete no se puede cambiar después | Desarrollo app |
+| T04 | Herramienta de cobros | **Listo para decidir:** RevenueCat (de 4 a 7 días de trabajo, contra 12 a 20 del cobro directo). El plan lo decide nuestro servidor y se guardan los comprobantes de Google para poder irse si hiciera falta | Servidor |
 | T05 | Precios y planes (mensual y anual) por mercado | Propuesta por mercado: Argentina, resto de Latinoamérica, Brasil y países de habla inglesa | Producto y precios |
 | T06 | Variante del español: voseo (Argentina) o neutro (resto de Latinoamérica) | La app hoy usa voseo. Opción: «es-AR» con voseo y «es-419» neutro | Localización |
 | T07 | Países del primer lanzamiento | Empezar por América, sin la Unión Europea, para no sumar DSA y RGPD al principio. **Ojo:** en Colombia y Perú el IVA queda a cargo del desarrollador aunque esté en el exterior; conviene dejarlos para después, salvo que el contador diga otra cosa | Requisitos de tiendas, Legal y Contable |
@@ -40,6 +40,8 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P20 | Medición de uso y errores, con consentimiento | Servidor y Legal | P02 | pendiente |
 | P21 | Crear la cuenta personal de Google Play: pago, verificación de identidad y dispositivo. Antes, decidir qué domicilio declarar (queda público al cobrar), el nombre de desarrollador y un correo de soporte provisorio. **Ojo:** si en un año no se envía ninguna app a revisión, Google cierra la cuenta | Titular, con la guía de Requisitos | P23 (hecha) | pendiente |
 | P22 | Lista de control oficial de Google Play contrastada con el estado real de la app | Requisitos de tiendas | — | en curso |
+| P24 | Registro del nombre de paquete en Play para la verificación de desarrolladores (anuncio del 15/07/2026) aplicado a una app nueva | Requisitos de tiendas y Desarrollo app | T03 | pendiente |
+| P25 | Actualizar el paso 4 de `docs/backend.md` (cobros) según T04 | Servidor | T04 | pendiente |
 | P23 | Guía paso a paso para crear la cuenta personal y explicación de la prueba cerrada (`docs/requisitos/guia-cuenta-google-play.md`) | Requisitos de tiendas | — | hecho |
 
 ## Para más adelante
