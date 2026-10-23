@@ -5,6 +5,10 @@ export type ServiceErrorCode =
   | 'auth-required'
   /** La función es del plan premium. */
   | 'premium-required'
+  /** Falta la fecha de nacimiento para comprobar la edad mínima (Reading Club). */
+  | 'age-required'
+  /** No tiene la edad mínima (Reading Club). */
+  | 'age-restricted'
   /** No es del usuario (editar o borrar lo ajeno). */
   | 'forbidden'
   /** Datos inválidos (el mensaje dice cuál). */

@@ -8,6 +8,7 @@
 | Planes y permisos | Funcionan. Se configuran en `src/config/plans.ts` y se aplican en la interfaz y en el servicio de datos. |
 | Límite de la biblioteca | Funciona: cuenta los documentos de la cuenta (o del dispositivo, sin sesión) contra el límite del plan. |
 | Cuentas, reseñas, likes y Reading Club | Funcionan con el **servicio local de prueba**: todo queda en este dispositivo (IndexedDB). La interfaz lo avisa. |
+| Edad mínima del Reading Club (16 años, D09) | Funciona en la interfaz y en el servicio local de prueba: la fecha de nacimiento se pide al entrar por primera vez al club, se carga una sola vez y no se cambia desde la app. En el servidor, **pendiente** (ver «Edad mínima del Reading Club»). |
 | Servidor de cuentas y comunidad | **Pendiente.** Falta elegir el proveedor y sus credenciales. |
 | Recuperación de contraseña por correo | **Pendiente** del servidor (el servicio local no manda correos y lo dice). |
 | Contratación, consulta y cancelación de la suscripción | **Pendiente** de la plataforma de pagos. Los botones responden «estará disponible próximamente». El precio está sin definir. |
@@ -47,7 +48,11 @@ La interfaz las refleja, pero la validación de verdad tiene que estar en el ser
   - no se da like a la reseña propia;
   - el contador se recalcula en la misma transacción.
 - **Propiedad:** solo quien publicó edita o elimina su reseña, su conversación o su respuesta.
-- **Reading Club:** leer, publicar y responder requiere el plan premium.
+- **Reading Club:** leer, publicar y responder requiere **16 años o más** (con la fecha de nacimiento cargada) **y** el plan premium. Registrarse no tiene límite de edad.
+- **Fecha de nacimiento:**
+  - se carga una sola vez, con la función `set_birth_date`; después, el usuario no puede cambiarla (solo soporte, con la clave de servicio, para corregir un error comprobado);
+  - no es pública: otras personas no la leen;
+  - se rechaza una fecha inexistente, futura o anterior a 1900.
 - **Validación de campos:** largos máximos (`TEXT_LIMITS` en `src/config/community.ts`) y categorías de las listas configuradas.
 - **Límite de documentos del plan:** cuando la biblioteca se sincronice (`PLANS[plan].limits.maxDocuments`). Si una cuenta queda por encima del límite, conserva el acceso y no puede agregar más.
 - **Plan del usuario:**
@@ -68,6 +73,8 @@ create table profiles (
   id uuid primary key references auth.users on delete cascade,
   username text not null unique check (char_length(username) between 3 and 30),
   plan text not null default 'free' check (plan in ('free', 'premium')),
+  -- Se pide al entrar por primera vez al Reading Club y se carga una sola vez (ver «Edad mínima del Reading Club»).
+  birth_date date check (birth_date >= date '1900-01-01'),
   created_at timestamptz not null default now()
 );
 
@@ -118,6 +125,36 @@ create function is_premium() returns boolean language sql stable security define
   select exists (select 1 from profiles where id = auth.uid() and plan = 'premium')
 $$;
 
+-- 16 años cumplidos a la fecha del servidor (CLUB_MIN_AGE en src/config/community.ts).
+-- Quien nació un 29 de febrero los cumple el 1 de marzo en los años no bisiestos, como en la app (src/lib/age.ts).
+create function club_age_ok() returns boolean language sql stable security definer as $$
+  select exists (
+    select 1 from profiles
+     where id = auth.uid()
+       and birth_date is not null
+       and birth_date <= (current_date - interval '16 years')::date
+  )
+$$;
+
+-- Miembro del Reading Club: 16 años o más y plan premium.
+create function club_member() returns boolean language sql stable security definer as $$
+  select is_premium() and club_age_ok()
+$$;
+
+-- Carga única de la fecha de nacimiento. La app la llama (setBirthDate); nadie actualiza la columna directo.
+create function set_birth_date(d date) returns void language plpgsql security definer as $$
+begin
+  if auth.uid() is null then raise exception 'auth-required'; end if;
+  if d is null or d < date '1900-01-01' or d > current_date then raise exception 'invalid'; end if;
+  update profiles set birth_date = d where id = auth.uid() and birth_date is null;
+  if not found then raise exception 'forbidden: la fecha de nacimiento ya está cargada'; end if;
+end $$;
+
+-- Cada quien lee solo su propia fecha (para mostrarla en el perfil y decidir qué pantalla del club ver).
+create function my_birth_date() returns date language sql stable security definer as $$
+  select birth_date from profiles where id = auth.uid()
+$$;
+
 -- El contador de likes se mantiene en el servidor.
 create function sync_review_likes() returns trigger language plpgsql security definer as $$
 begin
@@ -134,10 +171,16 @@ alter table review_likes enable row level security;
 alter table club_threads enable row level security;
 alter table club_replies enable row level security;
 
--- Perfiles: nombres públicos; cada quien edita el suyo, pero nunca su plan.
+-- Perfiles: nombres públicos; cada quien edita el suyo, pero nunca su plan ni su fecha de nacimiento.
 create policy "perfiles visibles" on profiles for select using (true);
 create policy "editar el perfil propio" on profiles for update using (id = auth.uid());
 revoke update (plan) on profiles from authenticated;   -- el plan lo cambia el servidor de pagos
+-- En Postgres, revocar una columna no anula un permiso dado a toda la tabla (Supabase da permisos de
+-- tabla a anon y authenticated). Por eso, para la fecha de nacimiento, se quitan los de tabla y se
+-- dan por columna. Vale también para el plan: con esto, `revoke update (plan)` queda cubierto.
+revoke select, update on profiles from anon, authenticated;
+grant select (id, username, plan, created_at) on profiles to anon, authenticated;   -- birth_date no es pública
+grant update (username) on profiles to authenticated;                               -- ni plan ni birth_date
 
 -- Reseñas: lectura pública; escritura con sesión y solo lo propio.
 create policy "leer reseñas" on reviews for select using (true);
@@ -153,15 +196,49 @@ create policy "dar like" on review_likes for insert with check (
 );
 create policy "retirar like" on review_likes for delete using (user_id = auth.uid());
 
--- Reading Club: todo requiere premium; editar y borrar, solo lo propio.
-create policy "leer el club" on club_threads for select using (is_premium());
-create policy "publicar en el club" on club_threads for insert with check (author_id = auth.uid() and is_premium());
-create policy "editar lo propio" on club_threads for update using (author_id = auth.uid() and is_premium());
-create policy "borrar lo propio" on club_threads for delete using (author_id = auth.uid() and is_premium());
-create policy "leer respuestas" on club_replies for select using (is_premium());
-create policy "responder" on club_replies for insert with check (author_id = auth.uid() and is_premium());
-create policy "editar respuesta propia" on club_replies for update using (author_id = auth.uid() and is_premium());
-create policy "borrar respuesta propia" on club_replies for delete using (author_id = auth.uid() and is_premium());
+-- Reading Club: todo requiere 16 años o más y premium (club_member); editar y borrar, solo lo propio.
+create policy "leer el club" on club_threads for select using (club_member());
+create policy "publicar en el club" on club_threads for insert with check (author_id = auth.uid() and club_member());
+create policy "editar lo propio" on club_threads for update using (author_id = auth.uid() and club_member());
+create policy "borrar lo propio" on club_threads for delete using (author_id = auth.uid() and club_member());
+create policy "leer respuestas" on club_replies for select using (club_member());
+create policy "responder" on club_replies for insert with check (author_id = auth.uid() and club_member());
+create policy "editar respuesta propia" on club_replies for update using (author_id = auth.uid() and club_member());
+create policy "borrar respuesta propia" on club_replies for delete using (author_id = auth.uid() and club_member());
 ```
 
 El contador de respuestas (`reply_count`, `last_activity`) se mantiene con un disparador equivalente al de los likes.
+
+## Edad mínima del Reading Club
+
+Decisión D09: registrarse no tiene límite de edad; el Reading Club exige 16 años o más, además del plan premium. La edad se configura en `CLUB_MIN_AGE` (`src/config/community.ts`); si cambia, hay que cambiar también el `16` de `club_age_ok()`.
+
+**En la app** (`src/lib/access.ts`, `canUse('club', …)`), el orden de los controles es:
+
+1. sin sesión: iniciar sesión;
+2. sin fecha de nacimiento: se pide, antes de ofrecer premium (motivo `age-unknown`);
+3. menor de 16: el club no está disponible para su edad, sin ofrecerle premium (motivo `age`);
+4. con 16 o más y plan gratuito: aviso de premium;
+5. con 16 o más y premium: acceso.
+
+**En el servicio** (`Backend.setBirthDate` y las operaciones del club), los errores son:
+
+| Caso | Código de `ServiceError` |
+| --- | --- |
+| Sin sesión | `auth-required` |
+| Sin fecha de nacimiento | `age-required` |
+| Menor de 16 | `age-restricted` |
+| 16 o más sin premium | `premium-required` |
+| Fecha inválida, futura o anterior a 1900 | `invalid` |
+| La fecha ya estaba cargada | `forbidden` |
+
+**En el servidor**, con el esquema de arriba:
+
+- columna `profiles.birth_date` (fecha, sin hora), que no es pública;
+- `set_birth_date(d)` la carga una sola vez; `my_birth_date()` la devuelve solo a su dueño;
+- las reglas por fila del club usan `club_member()`, que exige `is_premium()` y `club_age_ok()`;
+- el adaptador remoto (`remoteBackend.ts`) completa `User.birthDate` con `my_birth_date()` y traduce los errores de `set_birth_date` a los códigos de la tabla.
+
+**Fechas y zonas horarias.** La app calcula la edad con la fecha del dispositivo; el servidor, con la suya (`current_date`, en UTC si no se configura otra). El día del cumpleaños puede haber unas horas de diferencia: decide el servidor. Por la misma razón, alguien en una zona horaria adelantada a UTC podría ver rechazada la fecha de hoy como «futura» durante unas horas; no afecta a ninguna fecha de nacimiento realista.
+
+> No probado contra una base real: revisarlo junto con el resto del esquema al elegir el proveedor.

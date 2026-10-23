@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
+import { t } from '../i18n';
 import { IconClose } from './icons';
 
 interface Props {
@@ -49,7 +50,7 @@ export function Sheet({ title, onClose, children, wide, testId }: Props) {
         <header class="sheet-head">
           <h2>{title}</h2>
           {onClose && (
-            <button class="icon-btn" onClick={onClose} aria-label="Cerrar">
+            <button class="icon-btn" onClick={onClose} aria-label={t('common.close')}>
               <IconClose />
             </button>
           )}

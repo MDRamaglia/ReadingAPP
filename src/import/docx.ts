@@ -4,7 +4,8 @@
  * locales y el texto se convierte en bloques.
  */
 import mammoth from 'mammoth';
-import { stripExtension } from '../lib/text';
+import { t } from '../i18n';
+import { escapeHtml, stripExtension } from '../lib/text';
 import type { Block, DocMeta, TocEntry } from '../lib/types';
 import { htmlToBlocks, htmlToText, markChapterBreaks } from './htmlBlocks';
 import type { ImportProgress, ImportResult } from './types';
@@ -73,7 +74,8 @@ export async function importDocx(id: string, file: File, onProgress: (p: ImportP
         b.h = size.h;
       } else {
         b.t = 'notice';
-        b.html = `[Imagen en formato ${img.blob.type.replace('image/', '').toUpperCase() || 'desconocido'} que el navegador no puede mostrar]`;
+        // Texto guardado con el documento, en el idioma del momento de la importación.
+        b.html = escapeHtml(t('import.docx.imageNotice', { format: img.blob.type.replace('image/', '').toUpperCase() || t('import.docx.unknownFormat') }));
         b.len = htmlToText(b.html).length;
         delete b.img;
       }
@@ -94,11 +96,9 @@ export async function importDocx(id: string, file: File, onProgress: (p: ImportP
 
   const warnings: string[] = [];
   if (unsupported) {
-    warnings.push(
-      `${unsupported === 1 ? 'Una imagen está' : `${unsupported} imágenes están`} en un formato de Office (EMF/WMF) que el navegador no puede mostrar; se indica su lugar en el texto.`,
-    );
+    warnings.push(t('import.docx.unsupportedImages', { count: unsupported }));
   }
-  if (!finalBlocks.some((b) => b.len > 0)) warnings.push('El documento no contiene texto.');
+  if (!finalBlocks.some((b) => b.len > 0)) warnings.push(t('import.docx.noText'));
 
   const meta: DocMeta = {
     id,

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
+import { t } from '../i18n';
 import type { DocMeta, Position, ReadMode } from '../lib/types';
 import { Sheet } from '../ui/Sheet';
 
@@ -37,7 +38,7 @@ export function TocSheet({ meta, mode, page, pages, currentBlock, pageOfEntry, o
       idx = Number(v) - 1;
     }
     if (idx < 0 || idx >= total) {
-      setError(pdf ? `No existe la página «${value}».` : `Elegí un número entre 1 y ${total}.`);
+      setError(pdf ? t('toc.noPage', { page: value }) : t('toc.range', { total }));
       return;
     }
     onGoPage(idx);
@@ -61,11 +62,12 @@ export function TocSheet({ meta, mode, page, pages, currentBlock, pageOfEntry, o
   });
 
   return (
-    <Sheet title="Ir a…" onClose={onClose} wide testId="toc-sheet">
+    <Sheet title={t('toc.title')} onClose={onClose} wide testId="toc-sheet">
       {hasPages && total > 0 && (
         <form class="goto" onSubmit={submit}>
           <label for="goto-page">
-            Página {page !== undefined && mode === 'book' && <small>(estás en {pdf ? meta.pages?.[page]?.label : page + 1})</small>}
+            {t('toc.page')}{' '}
+            {page !== undefined && mode === 'book' && <small>{t('toc.youAreAt', { page: (pdf ? meta.pages?.[page]?.label : page + 1) ?? '' })}</small>}
           </label>
           <div class="goto-row">
             <input
@@ -80,7 +82,7 @@ export function TocSheet({ meta, mode, page, pages, currentBlock, pageOfEntry, o
               }}
             />
             <button class="btn" type="submit">
-              Ir
+              {t('toc.go')}
             </button>
           </div>
           {error && <p class="field-error">{error}</p>}
@@ -89,14 +91,22 @@ export function TocSheet({ meta, mode, page, pages, currentBlock, pageOfEntry, o
       {!hasPages && onGoPct && (
         <label class="field">
           <span class="field-label">
-            Avance <small>{Math.round(pct * 100)} %</small>
+            {t('toc.progress')} <small>{t('common.percent', { n: Math.round(pct * 100) })}</small>
           </span>
-          <input type="range" min={0} max={100} step={1} value={Math.round(pct * 100)} onChange={(e) => onGoPct(Number((e.target as HTMLInputElement).value) / 100)} aria-label="Ir a un porcentaje del documento" />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={Math.round(pct * 100)}
+            onChange={(e) => onGoPct(Number((e.target as HTMLInputElement).value) / 100)}
+            aria-label={t('toc.pctLabel')}
+          />
         </label>
       )}
       {entries.length > 0 ? (
-        <nav class="toc" aria-label="Secciones">
-          <h3 class="toc-title">Secciones</h3>
+        <nav class="toc" aria-label={t('toc.sections')}>
+          <h3 class="toc-title">{t('toc.sections')}</h3>
           <ol>
             {entries.map((t, i) => (
               <li key={i} class={`toc-l${Math.min(t.level, 3)}${i === current ? ' is-current' : ''}`}>
@@ -115,7 +125,7 @@ export function TocSheet({ meta, mode, page, pages, currentBlock, pageOfEntry, o
           </ol>
         </nav>
       ) : (
-        <p class="hint">Este documento no tiene títulos ni marcadores para armar un índice.</p>
+        <p class="hint">{t('toc.empty')}</p>
       )}
     </Sheet>
   );

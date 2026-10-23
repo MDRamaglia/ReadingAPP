@@ -1,0 +1,45 @@
+  ✓ cuenta: se registra e inicia sesión (contraseña con PBKDF2 del navegador)
+  ✓ cuenta: pasa a premium con el panel de desarrollo
+  ✓ marca: se ve el lema debajo del nombre
+  ✓ cuenta: sin errores de JavaScript 
+  ✓ ensayo.docx: se importa
+  ✓ ensayo.docx: modo libro con 16 páginas (mínimo esperado 8)
+  ✓ ensayo.docx: pasa de página (Pág. 1 de 16 → Pág. 2 de 16)
+  ✓ ensayo.docx: modo renglón avanza un renglón (3:0 → 3:1)
+  ✓ ensayo.docx: sin errores de JavaScript 
+  ✓ texto.pdf: se importa
+  ✓ texto.pdf: modo libro con 7 páginas (mínimo esperado 7)
+  ✓ texto.pdf: pasa de página (Pág. i de 7 → Pág. ii de 7)
+  ✓ texto.pdf: modo renglón avanza un renglón (2:0 → 3:0)
+  ✓ texto.pdf: sin errores de JavaScript 
+  ✓ ensayo.docx: se importa
+  ✓ ensayo.docx con animación de página: pasa de página (Pág. 1 de 16 → Pág. 2 de 16)
+  ✓ ensayo.docx con animación de página: la hoja se dobla (12 cuadros, recorte {'path('})
+  ✓ ensayo.docx con animación de página: la hoja se retira al terminar
+  ✓ ensayo.docx con animación de página: retrocede (Pág. 1 de 16)
+  ✓ ensayo.docx con animación de página: al retroceder la hoja vuelve (14 cuadros)
+  ✓ ensayo.docx con animación de página: sin errores de JavaScript 
+  ✓ ensayo.docx: se importa
+  ✓ ensayo.docx vertical: pasa de página (Pág. 1 de 16 → Pág. 2 de 16)
+  ✓ ensayo.docx vertical: sin animación de hoja
+  ✓ ensayo.docx vertical: la página entra desde abajo (flow-view turn-next-v)
+  ✓ ensayo.docx vertical: sin errores de JavaScript 
+  ✓ texto.pdf: se importa
+  ✓ texto.pdf con animación de página: pasa de página (Pág. i de 7 → Pág. ii de 7)
+  ✓ texto.pdf con animación de página: la hoja se dobla (11 cuadros, recorte {'path('})
+  ✓ texto.pdf con animación de página: la hoja se retira al terminar
+  ✓ texto.pdf con animación de página: retrocede (Pág. i de 7)
+  ✓ texto.pdf con animación de página: al retroceder la hoja vuelve (14 cuadros)
+  ✓ texto.pdf con animación de página: sin errores de JavaScript 
+  ✓ texto.pdf: se importa
+  ✓ texto.pdf vertical: pasa de página (Pág. i de 7 → Pág. ii de 7)
+  ✓ texto.pdf vertical: sin animación de hoja
+  ✓ texto.pdf vertical: la página entra desde abajo (pdf-spread turn-next-v)
+  ✓ texto.pdf vertical: sin errores de JavaScript 
+  ✓ reseñas: búsqueda sin tildes ni mayúsculas (['Obsesión en primera persona'])
+  ✓ reseñas: sin errores de JavaScript 
+  ✓ escaneado.pdf: se importa
+  ✓ escaneado.pdf: el OCR termina
+  ✓ escaneado.pdf: avisa la página degradada
+Resultado: todo bien
+exit=0

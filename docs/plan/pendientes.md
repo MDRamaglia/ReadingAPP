@@ -32,11 +32,11 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P03 | Borrado de cuenta dentro de la app y página web de borrado | Desarrollo app y Servidor | P02 | pendiente |
 | P04 | Política de privacidad, términos y normas de la comunidad (borradores en `docs/legal/`, a revisar por el titular; no se publican hasta que exista lo que describen) | Legal y Localización | T01, N-01, N-02 | en revisión del titular |
 | P05 | Moderación: denunciar, bloquear, filtrar y cola de revisión | Servidor y Desarrollo app | P02 | pendiente |
-| P06 | Control de edad (16+) para el Reading Club; registro sin límite de edad (D09) | Desarrollo app y Legal | — | en curso |
+| P06 | Control de edad (16+) para el Reading Club; registro sin límite de edad (D09). Hecho del lado de la app, verificado por QA (`docs/qa/informe-2026-10-23-edad-e-idiomas.md`). Falta el servidor real (P02) | Desarrollo app y Legal | P02 | hecho (app) |
 | P07 | Empaquetado Android y resguardo de la clave de firma | Desarrollo app | T03 | pendiente |
 | P08 | Google Play Billing validado en el servidor, con restauración y gestión de la suscripción | Servidor y Desarrollo app | P02, T04 | pendiente |
 | P09 | Pantalla de cobro conforme a las reglas de las tiendas | Diseño, Desarrollo app y Producto | T05 | pendiente |
-| P10 | Internacionalización: estructura de idiomas con el español como base (en curso); textos en en y pt (después) | Desarrollo app y Localización | T06 para la variante del español | en curso |
+| P10 | Internacionalización: estructura hecha (`src/i18n/`, 443 claves en español); faltan las traducciones al inglés y al portugués | Localización | T06 para la variante del español | estructura hecha |
 | P11 | Migración de los datos locales (cuentas de prueba, preferencias y biblioteca) a la cuenta real | Desarrollo app y Servidor | P02 | pendiente |
 | P12 | Dominio propio y correo de soporte | Titular (compra) y Servidor (configuración) | T01 | pendiente |
 | P13 | Ficha de Google Play en tres idiomas: textos, capturas y gráficos. El nombre tiene un máximo de 30 caracteres: «Knowmadic: lector PDF y Word» entra, la versión con «de» no. Falta saber si se puede usar «Word» | Marketing, Diseño y Localización | T01 | pendiente |
@@ -63,6 +63,11 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P35 | Revisar en el esquema de `docs/backend.md` que el contador de likes no se pueda modificar por la API, y el borrado en cascada de respuestas ajenas (N-06) | Servidor | P02 | pendiente |
 | P36 | OCR: sumar los modelos de inglés y portugués (hoy solo español) | Desarrollo app | — | pendiente |
 | P37 | Capturas para la ficha sin «Prueba local» ni el botón «Desarrollo» | Diseño y Desarrollo app | P01, P02 | pendiente |
+| P38 | Fallas bajas de QA: formulario de edición vacío para contenido inexistente (F1), pestaña trabada en el paso de la fecha (F2), avisos nativos del navegador en lugar de los propios para fechas futuras o anteriores a 1900 (F4) | Desarrollo app | — | pendiente |
+| P39 | Avisos de importación y OCR guardados como código, no como texto en español, con migración de la biblioteca local. Necesario antes de habilitar inglés y portugués | Desarrollo app | — | pendiente |
+| P40 | Idiomas fuera de `src/`: `index.html` y manifiesto; selector de idioma; decidir qué pasa con fechas y números en la vista previa `?lang=` (F3) | Desarrollo app y Localización | P10 | pendiente |
+| P41 | Camino por soporte para corregir una fecha de nacimiento mal cargada (derecho de rectificación) | Producto, Legal y Servidor | P12 | pendiente |
+| P42 | Ofrecer premium a menores de 16, cuando el premium incluye el Reading Club: definir la oferta | Producto y Legal | N-01 | pendiente |
 | P23 | Guía paso a paso para crear la cuenta personal y explicación de la prueba cerrada (`docs/requisitos/guia-cuenta-google-play.md`) | Requisitos de tiendas | — | hecho |
 
 ## Para más adelante

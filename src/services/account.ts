@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 import type { PlanId } from '../config/plans';
+import { t } from '../i18n';
 import { setSettingsScope } from '../lib/settings';
 import { backend } from './backend';
 import type { SignUpInput, User } from './types';
@@ -62,10 +63,17 @@ export async function signOut(): Promise<void> {
   set({ user: null });
 }
 
+/** Guarda la fecha de nacimiento (una sola vez) y actualiza la sesión. */
+export async function setBirthDate(date: string): Promise<User> {
+  const user = await (await backend()).setBirthDate(date);
+  set({ user });
+  return user;
+}
+
 /** Solo desarrollo: cambia el plan de la cuenta de prueba local. */
 export async function devSetPlan(plan: PlanId): Promise<void> {
   const b = await backend();
-  if (!b.dev) throw new Error('Este servicio no permite cambiar el plan desde la app.');
+  if (!b.dev) throw new Error(t('dev.cannotSetPlan'));
   set({ user: await b.dev.setPlan(plan) });
 }
 

@@ -9,25 +9,29 @@
  *   - cuentas: registro, inicio y cierre de sesión y recuperación de
  *     contraseña por correo, con el proveedor de autenticación elegido;
  *   - datos: reseñas, likes (uno por usuario y reseña), hilos y respuestas;
- *   - reglas en el servidor: propiedad de lo publicado, plan premium para el
- *     Reading Club y límite de documentos por plan (config/plans.ts);
+ *   - reglas en el servidor: propiedad de lo publicado, 16 años o más y plan
+ *     premium para el Reading Club (con la fecha de nacimiento cargada una
+ *     sola vez) y límite de documentos por plan (config/plans.ts);
  *   - plan del usuario: lo determina la suscripción en la plataforma de pagos.
  */
+import { t } from '../i18n';
 import { ServiceError } from './errors';
 import { pendingSubscriptions, type Backend } from './backend';
 
-const pending = () =>
-  Promise.reject(new ServiceError('unavailable', 'El servidor de cuentas todavía no está conectado. Esta función estará disponible cuando se conecte.'));
+const pending = () => Promise.reject(new ServiceError('unavailable', t('service.remote.pending')));
 
 export function createRemoteBackend(): Backend {
   return {
     kind: 'remote',
-    label: 'Servidor de cuentas (pendiente de conexión)',
+    get label() {
+      return t('service.remote.label');
+    },
     currentUser: async () => null,
     signUp: pending,
     signIn: pending,
     signOut: async () => undefined,
     requestPasswordReset: pending,
+    setBirthDate: pending,
     listReviews: pending,
     getReview: pending,
     createReview: pending,

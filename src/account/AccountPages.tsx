@@ -1,11 +1,13 @@
 /** Cuenta: ingreso, registro, recuperación de contraseña y perfil. */
 import { useState } from 'preact/hooks';
 import { PLANS } from '../config/plans';
-import { TEXT_LIMITS } from '../config/community';
+import { CLUB_MIN_AGE, clubCategoryLabel, TEXT_LIMITS } from '../config/community';
+import { t } from '../i18n';
+import { canUse } from '../lib/access';
 import { navigate } from '../router';
 import { signIn, signOut, signUp, useAccount } from '../services/account';
 import { backend } from '../services/backend';
-import { ErrorNote, LocalModeNote, PageHead, fmtDate, useLoad } from '../ui/page';
+import { ErrorNote, LocalModeNote, PageHead, fmtCalendarDate, fmtDate, useLoad } from '../ui/page';
 import { IconHeart } from '../ui/icons';
 
 const goBack = (back?: string) => navigate(back && back.startsWith('/') ? back : '/cuenta');
@@ -18,8 +20,8 @@ export function SignInPage({ back }: { back?: string }) {
   const qs = back ? `?volver=${encodeURIComponent(back)}` : '';
   return (
     <section class="narrow">
-      <PageHead title="Iniciar sesión" lead="Para publicar reseñas, dar likes y entrar al Reading Club." />
-      <LocalModeNote what="La cuenta y lo que publiques" />
+      <PageHead title={t('account.signIn.title')} lead={t('account.signIn.lead')} />
+      <LocalModeNote what={t('localNote.account')} />
       <form
         class="form"
         onSubmit={async (e) => {
@@ -37,20 +39,20 @@ export function SignInPage({ back }: { back?: string }) {
         }}
       >
         <label class="field">
-          <span class="field-label">Correo electrónico</span>
+          <span class="field-label">{t('field.email')}</span>
           <input class="input" type="email" autocomplete="email" required value={email} onInput={(e) => setEmail(e.currentTarget.value)} name="email" />
         </label>
         <label class="field">
-          <span class="field-label">Contraseña</span>
+          <span class="field-label">{t('field.password')}</span>
           <input class="input" type="password" autocomplete="current-password" required value={password} onInput={(e) => setPassword(e.currentTarget.value)} name="password" />
         </label>
         <ErrorNote error={error} />
         <button class="btn btn-primary btn-block" disabled={busy} data-testid="signin-submit">
-          Iniciar sesión
+          {t('common.signIn')}
         </button>
       </form>
       <p class="form-links">
-        <a href="#/cuenta/recuperar">Olvidé mi contraseña</a> · <a href={`#/cuenta/registro${qs}`}>Crear una cuenta</a>
+        <a href="#/cuenta/recuperar">{t('account.signIn.forgot')}</a> · <a href={`#/cuenta/registro${qs}`}>{t('account.createAccount')}</a>
       </p>
     </section>
   );
@@ -64,15 +66,15 @@ export function SignUpPage({ back }: { back?: string }) {
   const upd = (k: keyof typeof f) => (e: Event) => setF((s) => ({ ...s, [k]: (e.currentTarget as HTMLInputElement).value }));
   return (
     <section class="narrow">
-      <PageHead title="Crear una cuenta" lead="Con una cuenta podés publicar reseñas y dar likes. El plan gratuito no tiene costo." />
-      <LocalModeNote what="La cuenta y lo que publiques" />
+      <PageHead title={t('account.signUp.title')} lead={t('account.signUp.lead')} />
+      <LocalModeNote what={t('localNote.account')} />
       <form
         class="form"
         onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
           if (f.password !== f.confirm) {
-            setError(new Error('Las contraseñas no coinciden.'));
+            setError(new Error(t('account.signUp.mismatch')));
             return;
           }
           setBusy(true);
@@ -87,30 +89,30 @@ export function SignUpPage({ back }: { back?: string }) {
         }}
       >
         <label class="field">
-          <span class="field-label">Nombre de usuario</span>
+          <span class="field-label">{t('field.username')}</span>
           <input class="input" required autocomplete="username" maxLength={TEXT_LIMITS.username.max} value={f.username} onInput={upd('username')} name="username" />
-          <small class="field-help">Así te van a ver en las reseñas y el Reading Club.</small>
+          <small class="field-help">{t('account.signUp.usernameHelp')}</small>
         </label>
         <label class="field">
-          <span class="field-label">Correo electrónico</span>
+          <span class="field-label">{t('field.email')}</span>
           <input class="input" type="email" required autocomplete="email" value={f.email} onInput={upd('email')} name="email" />
         </label>
         <label class="field">
-          <span class="field-label">Contraseña</span>
+          <span class="field-label">{t('field.password')}</span>
           <input class="input" type="password" required autocomplete="new-password" minLength={TEXT_LIMITS.password.min} value={f.password} onInput={upd('password')} name="password" />
-          <small class="field-help">Al menos {TEXT_LIMITS.password.min} caracteres.</small>
+          <small class="field-help">{t('account.signUp.passwordHelp', { count: TEXT_LIMITS.password.min })}</small>
         </label>
         <label class="field">
-          <span class="field-label">Repetí la contraseña</span>
+          <span class="field-label">{t('account.signUp.confirm')}</span>
           <input class="input" type="password" required autocomplete="new-password" value={f.confirm} onInput={upd('confirm')} name="confirm" />
         </label>
         <ErrorNote error={error} />
         <button class="btn btn-primary btn-block" disabled={busy} data-testid="signup-submit">
-          Crear cuenta
+          {t('account.signUp.submit')}
         </button>
       </form>
       <p class="form-links">
-        ¿Ya tenés cuenta? <a href={`#/cuenta/ingresar${qs}`}>Iniciar sesión</a>
+        {t('account.signUp.haveAccount')} <a href={`#/cuenta/ingresar${qs}`}>{t('common.signIn')}</a>
       </p>
     </section>
   );
@@ -122,7 +124,7 @@ export function RecoverPage() {
   const [error, setError] = useState<unknown>(null);
   return (
     <section class="narrow">
-      <PageHead title="Recuperar la contraseña" lead="Te enviamos un correo con un enlace para crear una contraseña nueva." />
+      <PageHead title={t('account.recover.title')} lead={t('account.recover.lead')} />
       <form
         class="form"
         onSubmit={async (e) => {
@@ -136,7 +138,7 @@ export function RecoverPage() {
         }}
       >
         <label class="field">
-          <span class="field-label">Correo electrónico de la cuenta</span>
+          <span class="field-label">{t('account.recover.email')}</span>
           <input class="input" type="email" required autocomplete="email" value={email} onInput={(e) => setEmail(e.currentTarget.value)} name="email" />
         </label>
         <ErrorNote error={error} />
@@ -145,10 +147,10 @@ export function RecoverPage() {
             {result.message}
           </p>
         )}
-        <button class="btn btn-primary btn-block">Enviar enlace</button>
+        <button class="btn btn-primary btn-block">{t('account.recover.submit')}</button>
       </form>
       <p class="form-links">
-        <a href="#/cuenta/ingresar">Volver a iniciar sesión</a>
+        <a href="#/cuenta/ingresar">{t('account.recover.back')}</a>
       </p>
     </section>
   );
@@ -156,18 +158,18 @@ export function RecoverPage() {
 
 export function ProfilePage() {
   const { user, ready } = useAccount();
-  if (!ready) return <p class="loading">Cargando…</p>;
+  if (!ready) return <p class="loading">{t('common.loading')}</p>;
   if (!user) {
     return (
       <section class="narrow">
-        <PageHead title="Tu cuenta" lead="Leer no requiere cuenta. Con una cuenta podés publicar reseñas, dar likes y, con premium, participar del Reading Club." />
-        <LocalModeNote what="Las cuentas" />
+        <PageHead title={t('account.profile.guestTitle')} lead={t('account.profile.guestLead')} />
+        <LocalModeNote what={t('localNote.accounts')} />
         <div class="card-actions">
           <a class="btn btn-primary" href="#/cuenta/registro" data-testid="go-signup">
-            Crear una cuenta
+            {t('account.createAccount')}
           </a>
           <a class="btn" href="#/cuenta/ingresar" data-testid="go-signin">
-            Iniciar sesión
+            {t('common.signIn')}
           </a>
         </div>
       </section>
@@ -181,12 +183,13 @@ function Profile() {
   const u = user!;
   const plan = PLANS[u.plan];
   const reviews = useLoad(async () => (await backend()).listReviews({ authorId: u.id, sort: 'recent' }), [u.id]);
+  const club = canUse('club', u);
   const posts = useLoad(async () => {
-    if (u.plan !== 'premium') return null;
+    if (!club.ok) return null;
     const b = await backend();
     const [threads, replies] = await Promise.all([b.listThreads({ authorId: u.id }), b.listReplies({ authorId: u.id })]);
     return { threads, replies };
-  }, [u.id, u.plan]);
+  }, [u.id, club.ok]);
   const [planMsg, setPlanMsg] = useState('');
   const act = async (fn: 'manage' | 'cancel') => setPlanMsg((await (await backend()).subscription[fn]()).message);
 
@@ -194,11 +197,7 @@ function Profile() {
     <section>
       <PageHead
         title={u.username}
-        lead={
-          <>
-            {u.email} · en Knowmadic desde el {fmtDate(u.createdAt)}
-          </>
-        }
+        lead={t('account.profile.lead', { email: u.email, date: fmtDate(u.createdAt) })}
         actions={
           <button
             class="btn"
@@ -208,40 +207,40 @@ function Profile() {
               navigate('/');
             }}
           >
-            Cerrar sesión
+            {t('account.profile.signOut')}
           </button>
         }
       />
-      <LocalModeNote what="Tu cuenta, tus reseñas y tus publicaciones" />
+      <LocalModeNote what={t('localNote.profile')} />
 
       <div class="card plan-card" data-testid="plan-card">
         <div class="plan-card-head">
           <div>
-            <p class="kicker">Tu plan</p>
+            <p class="kicker">{t('account.profile.plan')}</p>
             <p class="plan-name" data-testid="profile-plan">
               {plan.name}
             </p>
             <p class="muted">{plan.summary}</p>
           </div>
-          {u.plan === 'premium' && <span class="plan-pill">Premium</span>}
+          {u.plan === 'premium' && <span class="plan-pill">{t('plans.pill')}</span>}
         </div>
         <div class="card-actions">
           {u.plan === 'free' ? (
             <a class="btn btn-primary" href="#/planes">
-              Conocer el plan premium
+              {t('account.profile.learnPremium')}
             </a>
           ) : (
             <>
               <button class="btn" onClick={() => void act('manage')} data-testid="manage-plan">
-                Gestionar suscripción
+                {t('account.profile.manage')}
               </button>
               <button class="btn btn-quiet" onClick={() => void act('cancel')} data-testid="cancel-plan">
-                Cancelar suscripción
+                {t('account.profile.cancel')}
               </button>
             </>
           )}
           <a class="btn btn-quiet" href="#/planes">
-            Comparar planes
+            {t('account.profile.compare')}
           </a>
         </div>
         {planMsg && (
@@ -251,7 +250,25 @@ function Profile() {
         )}
       </div>
 
-      <h2 class="section-title">Mis reseñas</h2>
+      <div class="card birth-card" data-testid="birth-card">
+        <p class="kicker">{t('field.birthDate')}</p>
+        {u.birthDate ? (
+          <>
+            <p class="birth-date" data-testid="profile-birth-date">
+              {fmtCalendarDate(u.birthDate)}
+            </p>
+            <p class="muted" data-testid="birth-date-locked">
+              {t('account.profile.birthLocked')}
+            </p>
+          </>
+        ) : (
+          <p class="muted" data-testid="birth-date-missing">
+            {t('account.profile.birthMissing', { age: CLUB_MIN_AGE })}
+          </p>
+        )}
+      </div>
+
+      <h2 class="section-title">{t('account.profile.myReviews')}</h2>
       {reviews.data?.length ? (
         <ul class="plain-list" data-testid="my-reviews">
           {reviews.data.map((r) => (
@@ -268,35 +285,44 @@ function Profile() {
         </ul>
       ) : (
         <p class="muted">
-          Todavía no publicaste reseñas. <a href="#/resenas/nueva">Escribir la primera</a>.
+          {t('account.profile.noReviews')} <a href="#/resenas/nueva">{t('account.profile.writeFirst')}</a>.
         </p>
       )}
 
-      <h2 class="section-title">Mis publicaciones en el Reading Club</h2>
-      {u.plan !== 'premium' ? (
+      <h2 class="section-title">{t('account.profile.myPosts')}</h2>
+      {!club.ok && club.reason === 'age' ? (
+        <p class="muted">{t('club.ageNote', { age: CLUB_MIN_AGE })}</p>
+      ) : !club.ok && club.reason === 'age-unknown' ? (
         <p class="muted">
-          El Reading Club es parte del plan premium. <a href="#/planes">Ver planes</a>.
+          {t('account.profile.clubAgeUnknown', { age: CLUB_MIN_AGE })} <a href="#/club">{t('account.profile.goClub')}</a>.
+        </p>
+      ) : !club.ok ? (
+        <p class="muted">
+          {t('account.profile.clubPremium')} <a href="#/planes">{t('common.seePlans')}</a>.
         </p>
       ) : posts.data && (posts.data.threads.length || posts.data.replies.length) ? (
         <ul class="plain-list" data-testid="my-posts">
-          {posts.data.threads.map((t) => (
-            <li key={t.id}>
-              <a href={`#/club/${t.id}`}>
-                <strong>{t.title}</strong>
+          {posts.data.threads.map((th) => (
+            <li key={th.id}>
+              <a href={`#/club/${th.id}`}>
+                <strong>{th.title}</strong>
               </a>
-              <span class="muted"> · {t.category} · {fmtDate(t.createdAt)}</span>
+              <span class="muted">
+                {' '}
+                · {clubCategoryLabel(th.category)} · {fmtDate(th.createdAt)}
+              </span>
             </li>
           ))}
           {posts.data.replies.map((r) => (
             <li key={r.id}>
-              <a href={`#/club/${r.threadId}`}>Respuesta: «{r.body.slice(0, 80)}{r.body.length > 80 ? '…' : ''}»</a>
+              <a href={`#/club/${r.threadId}`}>{t('account.profile.replyItem', { text: r.body.length > 80 ? `${r.body.slice(0, 80)}…` : r.body })}</a>
               <span class="muted"> · {fmtDate(r.createdAt)}</span>
             </li>
           ))}
         </ul>
       ) : (
         <p class="muted">
-          Todavía no publicaste en el Reading Club. <a href="#/club/nueva">Abrir una conversación</a>.
+          {t('account.profile.noPosts')} <a href="#/club/nueva">{t('account.profile.openThread')}</a>.
         </p>
       )}
     </section>

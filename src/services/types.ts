@@ -7,6 +7,12 @@ export interface User {
   email: string;
   plan: PlanId;
   createdAt: number;
+  /**
+   * Fecha de nacimiento («AAAA-MM-DD»). Se pide solo al entrar por primera
+   * vez al Reading Club (16 años o más, D09) y, una vez cargada, no se puede
+   * cambiar desde la app. Sin valor: todavía no se cargó.
+   */
+  birthDate?: string | null;
 }
 
 export interface Review {

@@ -1,0 +1,107 @@
+  104 passed (7.2m)
+exit=0
+
+  ✓    1 [celular] › tests/e2e/01-word-libro.spec.ts:5:3 › Word (.docx) en modo libro › carga el documento real y conserva su estructura
+  ✓    2 [celular] › tests/e2e/01-word-libro.spec.ts:36:3 › Word (.docx) en modo libro › pasa páginas con toques, deslizamiento y teclado
+  ✓    3 [celular] › tests/e2e/01-word-libro.spec.ts:72:3 › Word (.docx) en modo libro › va a una página o sección
+  ✓    4 [celular] › tests/e2e/02-renglon.spec.ts:5:3 › Modo concentración de renglón único › cada toque avanza exactamente un renglón visual, también entre párrafos y títulos
+  ✓    5 [celular] › tests/e2e/02-renglon.spec.ts:61:3 › Modo concentración de renglón único › la transición es suave y el texto circundante se atenúa
+  ✓    6 [celular] › tests/e2e/02-renglon.spec.ts:85:3 › Modo concentración de renglón único › al cambiar la letra, el ancho, el interlineado o girar el celular, recalcula sin perder el lugar
+  ✓    7 [celular] › tests/e2e/03-pdf-texto.spec.ts:5:3 › PDF con texto seleccionable › se detecta como PDF con texto y avisa el orden dudoso de la página a dos columnas
+  ✓    8 [celular] › tests/e2e/03-pdf-texto.spec.ts:22:3 › PDF con texto seleccionable › modo libro: páginas originales con su numeración, una o dos por pantalla
+  ✓    9 [celular] › tests/e2e/03-pdf-texto.spec.ts:52:3 › PDF con texto seleccionable › modo renglón: texto limpio, sin encabezados repetidos, con palabras cortadas reconstruidas
+  ✓   10 [celular] › tests/e2e/03-pdf-texto.spec.ts:73:3 › PDF con texto seleccionable › modo renglón: al terminar una página continúa con la siguiente con un toque normal
+  ✓   11 [celular] › tests/e2e/03-pdf-texto.spec.ts:100:3 › PDF con texto seleccionable › permite consultar la página original, con aviso de orden dudoso
+  ✓   12 [celular] › tests/e2e/04-continuidad.spec.ts:8:3 › Continuidad › Word: cambiar de modo lleva al mismo fragmento
+  ✓   13 [celular] › tests/e2e/04-continuidad.spec.ts:43:3 › Continuidad › PDF: cambiar de modo lleva a la misma página y, si no se movió, al mismo renglón
+  ✓   14 [celular] › tests/e2e/04-continuidad.spec.ts:70:3 › Continuidad › guarda el punto de lectura y lo ofrece al volver a abrir la app
+  ✓   15 [celular] › tests/e2e/04-continuidad.spec.ts:115:3 › Continuidad › también se puede empezar desde el principio
+  ✓   16 [celular] › tests/e2e/04-continuidad.spec.ts:128:3 › Continuidad › después de la primera visita funciona sin conexión
+  ✓   17 [celular] › tests/e2e/05-escaneado-ocr.spec.ts:10:3 › PDF escaneado › detecta el escaneo, reconoce el texto en el dispositivo y avisa las páginas dudosas
+  ✓   18 [celular] › tests/e2e/06-biblioteca.spec.ts:6:3 › Biblioteca › un .doc antiguo se rechaza con instrucciones claras de conversión
+  ✓   19 [celular] › tests/e2e/06-biblioteca.spec.ts:16:3 › Biblioteca › un archivo que no es Word ni PDF se rechaza
+  ✓   20 [celular] › tests/e2e/06-biblioteca.spec.ts:24:3 › Biblioteca › muestra el avance y elimina el documento junto con su progreso
+  ✓   21 [celular] › tests/e2e/07-actualizacion.spec.ts:12:3 › Actualización › una versión nueva reemplaza a la anterior sin cerrar la app y sin perder el lugar
+  ✓   22 [celular] › tests/e2e/08-libro-navegacion.spec.ts:104:3 › Modo libro: dirección y animación de página › sin premium, la animación de página explica su acceso y lleva a los planes
+  ✓   23 [celular] › tests/e2e/08-libro-navegacion.spec.ts:123:3 › Modo libro: dirección y animación de página › con premium: por defecto horizontal y sin animación; el interruptor se deshabilita en vertical y conserva su valor
+  ✓   24 [celular] › tests/e2e/08-libro-navegacion.spec.ts:164:3 › Modo libro: dirección y animación de página › con premium, la velocidad de la animación cambia la duración de la vuelta
+  ✓   25 [celular] › tests/e2e/08-libro-navegacion.spec.ts:198:3 › Modo libro: dirección y animación de página › vertical: pasa páginas completas hacia arriba y abajo con deslizamiento, toques, teclado y rueda
+  ✓   26 [celular] › tests/e2e/08-libro-navegacion.spec.ts:249:3 › Modo libro: dirección y animación de página › vertical en PDF: páginas originales hacia arriba y abajo
+  ✓   27 [celular] › tests/e2e/08-libro-navegacion.spec.ts:266:3 › Modo libro: dirección y animación de página › horizontal con animación: la hoja se dobla, descubre la siguiente y vuelve al retroceder (Word)
+  ✓   28 [celular] › tests/e2e/08-libro-navegacion.spec.ts:295:3 › Modo libro: dirección y animación de página › horizontal con animación: pases rápidos terminan en la página correcta, sin hojas colgadas
+  ✓   29 [celular] › tests/e2e/08-libro-navegacion.spec.ts:318:3 › Modo libro: dirección y animación de página › horizontal con animación: la hoja sigue al dedo y se completa o se devuelve al soltar
+  ✓   30 [celular] › tests/e2e/08-libro-navegacion.spec.ts:355:3 › Modo libro: dirección y animación de página › horizontal con animación en PDF: la página original se dobla al avanzar y al retroceder
+  ✓   31 [celular] › tests/e2e/08-libro-navegacion.spec.ts:384:3 › Modo libro: dirección y animación de página › cambiar la dirección o la animación conserva la posición
+  ✓   32 [celular] › tests/e2e/08-libro-navegacion.spec.ts:404:3 › Modo libro: dirección y animación de página › el modo renglón no cambia con la navegación vertical ni con la animación
+  ✓   33 [celular] › tests/e2e/08-libro-navegacion.spec.ts:424:3 › Modo libro: dirección y animación de página › la biblioteca muestra el lema nuevo
+  ✓   34 [celular] › tests/e2e/09-cuentas-planes.spec.ts:5:3 › Cuentas y planes › registro, cierre e inicio de sesión, recuperación y perfil
+  ✓   35 [celular] › tests/e2e/09-cuentas-planes.spec.ts:50:3 › Cuentas y planes › la página de planes compara gratuito y premium; la contratación queda para más adelante
+  ✓   36 [celular] › tests/e2e/09-cuentas-planes.spec.ts:75:3 › Cuentas y planes › las preferencias de lectura siguen a la cuenta
+  ✓   37 [celular] › tests/e2e/10-biblioteca-limite.spec.ts:23:3 › Biblioteca: límite del plan gratuito › cuenta los archivos, frena el sexto con una explicación y libera lugar al eliminar
+  ✓   38 [celular] › tests/e2e/10-biblioteca-limite.spec.ts:49:3 › Biblioteca: límite del plan gratuito › premium no tiene límite de cantidad; al volver a gratuito se conserva el acceso pero no se puede cargar
+  ✓   39 [celular] › tests/e2e/10-biblioteca-limite.spec.ts:73:3 › Biblioteca: límite del plan gratuito › los documentos cargados sin cuenta se pueden sumar a la biblioteca de la cuenta
+  ✓   40 [celular] › tests/e2e/10-biblioteca-limite.spec.ts:86:3 › Biblioteca: límite del plan gratuito › sumar documentos cargados sin cuenta respeta el límite del plan
+  ✓   41 [celular] › tests/e2e/11-resenas.spec.ts:42:3 › Reseñas › sin cuenta se leen; para publicar o dar like hay que iniciar sesión
+  ✓   42 [celular] › tests/e2e/11-resenas.spec.ts:51:3 › Reseñas › búsqueda sin distinguir mayúsculas ni tildes, filtro por categoría y los dos órdenes
+  ✓   43 [celular] › tests/e2e/11-resenas.spec.ts:95:3 › Reseñas › un like por persona, que se puede retirar; no se da like a lo propio
+  ✓   44 [celular] › tests/e2e/11-resenas.spec.ts:116:3 › Reseñas › las reseñas con spoilers se ocultan hasta que se deciden ver
+  ✓   45 [celular] › tests/e2e/11-resenas.spec.ts:126:3 › Reseñas › solo quien publicó puede editar o eliminar su reseña
+  ✓   46 [celular] › tests/e2e/12-club.spec.ts:27:3 › Reading Club › sin cuenta, o con 16 o más y el plan gratuito, se ve qué ofrece y cómo acceder, pero no las conversaciones
+  ✓   47 [celular] › tests/e2e/12-club.spec.ts:62:3 › Reading Club › menor de 16: se pide la fecha antes de ofrecer premium y el club no está disponible
+  ✓   48 [celular] › tests/e2e/12-club.spec.ts:115:3 › Reading Club › 16 o más con premium: primero la fecha y después se entra
+  ✓   49 [celular] › tests/e2e/12-club.spec.ts:130:3 › Reading Club › la fecha de nacimiento queda bloqueada
+  ✓   50 [celular] › tests/e2e/12-club.spec.ts:158:3 › Reading Club › publicar, responder y editar o eliminar solo lo propio
+  ✓   51 [celular] › tests/e2e/99-capturas.spec.ts:14:3 › Capturas › pantallas principales
+  ✓   52 [celular] › tests/e2e/99-capturas.spec.ts:130:3 › Capturas › cuentas, reseñas, Reading Club y planes
+  ✓   53 [computadora] › tests/e2e/01-word-libro.spec.ts:5:3 › Word (.docx) en modo libro › carga el documento real y conserva su estructura
+  ✓   54 [computadora] › tests/e2e/01-word-libro.spec.ts:36:3 › Word (.docx) en modo libro › pasa páginas con toques, deslizamiento y teclado
+  ✓   55 [computadora] › tests/e2e/01-word-libro.spec.ts:72:3 › Word (.docx) en modo libro › va a una página o sección
+  ✓   56 [computadora] › tests/e2e/02-renglon.spec.ts:5:3 › Modo concentración de renglón único › cada toque avanza exactamente un renglón visual, también entre párrafos y títulos
+  ✓   57 [computadora] › tests/e2e/02-renglon.spec.ts:61:3 › Modo concentración de renglón único › la transición es suave y el texto circundante se atenúa
+  ✓   58 [computadora] › tests/e2e/02-renglon.spec.ts:85:3 › Modo concentración de renglón único › al cambiar la letra, el ancho, el interlineado o girar el celular, recalcula sin perder el lugar
+  ✓   59 [computadora] › tests/e2e/03-pdf-texto.spec.ts:5:3 › PDF con texto seleccionable › se detecta como PDF con texto y avisa el orden dudoso de la página a dos columnas
+  ✓   60 [computadora] › tests/e2e/03-pdf-texto.spec.ts:22:3 › PDF con texto seleccionable › modo libro: páginas originales con su numeración, una o dos por pantalla
+  ✓   61 [computadora] › tests/e2e/03-pdf-texto.spec.ts:52:3 › PDF con texto seleccionable › modo renglón: texto limpio, sin encabezados repetidos, con palabras cortadas reconstruidas
+  ✓   62 [computadora] › tests/e2e/03-pdf-texto.spec.ts:73:3 › PDF con texto seleccionable › modo renglón: al terminar una página continúa con la siguiente con un toque normal
+  ✓   63 [computadora] › tests/e2e/03-pdf-texto.spec.ts:100:3 › PDF con texto seleccionable › permite consultar la página original, con aviso de orden dudoso
+  ✓   64 [computadora] › tests/e2e/04-continuidad.spec.ts:8:3 › Continuidad › Word: cambiar de modo lleva al mismo fragmento
+  ✓   65 [computadora] › tests/e2e/04-continuidad.spec.ts:43:3 › Continuidad › PDF: cambiar de modo lleva a la misma página y, si no se movió, al mismo renglón
+  ✓   66 [computadora] › tests/e2e/04-continuidad.spec.ts:70:3 › Continuidad › guarda el punto de lectura y lo ofrece al volver a abrir la app
+  ✓   67 [computadora] › tests/e2e/04-continuidad.spec.ts:115:3 › Continuidad › también se puede empezar desde el principio
+  ✓   68 [computadora] › tests/e2e/04-continuidad.spec.ts:128:3 › Continuidad › después de la primera visita funciona sin conexión
+  ✓   69 [computadora] › tests/e2e/05-escaneado-ocr.spec.ts:10:3 › PDF escaneado › detecta el escaneo, reconoce el texto en el dispositivo y avisa las páginas dudosas
+  ✓   70 [computadora] › tests/e2e/06-biblioteca.spec.ts:6:3 › Biblioteca › un .doc antiguo se rechaza con instrucciones claras de conversión
+  ✓   71 [computadora] › tests/e2e/06-biblioteca.spec.ts:16:3 › Biblioteca › un archivo que no es Word ni PDF se rechaza
+  ✓   72 [computadora] › tests/e2e/06-biblioteca.spec.ts:24:3 › Biblioteca › muestra el avance y elimina el documento junto con su progreso
+  ✓   73 [computadora] › tests/e2e/07-actualizacion.spec.ts:12:3 › Actualización › una versión nueva reemplaza a la anterior sin cerrar la app y sin perder el lugar
+  ✓   74 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:104:3 › Modo libro: dirección y animación de página › sin premium, la animación de página explica su acceso y lleva a los planes
+  ✓   75 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:123:3 › Modo libro: dirección y animación de página › con premium: por defecto horizontal y sin animación; el interruptor se deshabilita en vertical y conserva su valor
+  ✓   76 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:164:3 › Modo libro: dirección y animación de página › con premium, la velocidad de la animación cambia la duración de la vuelta
+  ✓   77 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:198:3 › Modo libro: dirección y animación de página › vertical: pasa páginas completas hacia arriba y abajo con deslizamiento, toques, teclado y rueda
+  ✓   78 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:249:3 › Modo libro: dirección y animación de página › vertical en PDF: páginas originales hacia arriba y abajo
+  ✓   79 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:266:3 › Modo libro: dirección y animación de página › horizontal con animación: la hoja se dobla, descubre la siguiente y vuelve al retroceder (Word)
+  ✓   80 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:295:3 › Modo libro: dirección y animación de página › horizontal con animación: pases rápidos terminan en la página correcta, sin hojas colgadas
+  ✓   81 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:318:3 › Modo libro: dirección y animación de página › horizontal con animación: la hoja sigue al dedo y se completa o se devuelve al soltar
+  ✓   82 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:355:3 › Modo libro: dirección y animación de página › horizontal con animación en PDF: la página original se dobla al avanzar y al retroceder
+  ✓   83 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:384:3 › Modo libro: dirección y animación de página › cambiar la dirección o la animación conserva la posición
+  ✓   84 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:404:3 › Modo libro: dirección y animación de página › el modo renglón no cambia con la navegación vertical ni con la animación
+  ✓   85 [computadora] › tests/e2e/08-libro-navegacion.spec.ts:424:3 › Modo libro: dirección y animación de página › la biblioteca muestra el lema nuevo
+  ✓   86 [computadora] › tests/e2e/09-cuentas-planes.spec.ts:5:3 › Cuentas y planes › registro, cierre e inicio de sesión, recuperación y perfil
+  ✓   87 [computadora] › tests/e2e/09-cuentas-planes.spec.ts:50:3 › Cuentas y planes › la página de planes compara gratuito y premium; la contratación queda para más adelante
+  ✓   88 [computadora] › tests/e2e/09-cuentas-planes.spec.ts:75:3 › Cuentas y planes › las preferencias de lectura siguen a la cuenta
+  ✓   89 [computadora] › tests/e2e/10-biblioteca-limite.spec.ts:23:3 › Biblioteca: límite del plan gratuito › cuenta los archivos, frena el sexto con una explicación y libera lugar al eliminar
+  ✓   90 [computadora] › tests/e2e/10-biblioteca-limite.spec.ts:49:3 › Biblioteca: límite del plan gratuito › premium no tiene límite de cantidad; al volver a gratuito se conserva el acceso pero no se puede cargar
+  ✓   91 [computadora] › tests/e2e/10-biblioteca-limite.spec.ts:73:3 › Biblioteca: límite del plan gratuito › los documentos cargados sin cuenta se pueden sumar a la biblioteca de la cuenta
+  ✓   92 [computadora] › tests/e2e/10-biblioteca-limite.spec.ts:86:3 › Biblioteca: límite del plan gratuito › sumar documentos cargados sin cuenta respeta el límite del plan
+  ✓   93 [computadora] › tests/e2e/11-resenas.spec.ts:42:3 › Reseñas › sin cuenta se leen; para publicar o dar like hay que iniciar sesión
+  ✓   94 [computadora] › tests/e2e/11-resenas.spec.ts:51:3 › Reseñas › búsqueda sin distinguir mayúsculas ni tildes, filtro por categoría y los dos órdenes
+  ✓   95 [computadora] › tests/e2e/11-resenas.spec.ts:95:3 › Reseñas › un like por persona, que se puede retirar; no se da like a lo propio
+  ✓   96 [computadora] › tests/e2e/11-resenas.spec.ts:116:3 › Reseñas › las reseñas con spoilers se ocultan hasta que se deciden ver
+  ✓   97 [computadora] › tests/e2e/11-resenas.spec.ts:126:3 › Reseñas › solo quien publicó puede editar o eliminar su reseña
+  ✓   98 [computadora] › tests/e2e/12-club.spec.ts:27:3 › Reading Club › sin cuenta, o con 16 o más y el plan gratuito, se ve qué ofrece y cómo acceder, pero no las conversaciones
+  ✓   99 [computadora] › tests/e2e/12-club.spec.ts:62:3 › Reading Club › menor de 16: se pide la fecha antes de ofrecer premium y el club no está disponible
+  ✓  100 [computadora] › tests/e2e/12-club.spec.ts:115:3 › Reading Club › 16 o más con premium: primero la fecha y después se entra
+  ✓  101 [computadora] › tests/e2e/12-club.spec.ts:130:3 › Reading Club › la fecha de nacimiento queda bloqueada
+  ✓  102 [computadora] › tests/e2e/12-club.spec.ts:158:3 › Reading Club › publicar, responder y editar o eliminar solo lo propio
+  ✓  103 [computadora] › tests/e2e/99-capturas.spec.ts:14:3 › Capturas › pantallas principales
+  ✓  104 [computadora] › tests/e2e/99-capturas.spec.ts:130:3 › Capturas › cuentas, reseñas, Reading Club y planes

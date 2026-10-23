@@ -1,7 +1,10 @@
 /** Piezas comunes de las páginas de secciones. */
 import type { ComponentChildren } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
+import { fmtDate as formatDate, t } from '../i18n';
+import { parseIsoDate, dateValue } from '../lib/age';
 import { signInHref } from '../router';
+import type { AccessReason } from '../lib/access';
 import { useAccount } from '../services/account';
 import { isServiceError } from '../services/errors';
 import { IconLock, IconSpark } from './icons';
@@ -24,8 +27,7 @@ export function LocalModeNote({ what }: { what: string }) {
   if (backendKind !== 'local') return null;
   return (
     <p class="local-note" data-testid="local-note">
-      <IconLock size={15} /> <strong>Prueba local.</strong> {what} se guardan solo en este dispositivo: todavía no hay un servidor de cuentas conectado, así
-      que no se sincroniza ni lo ven otras personas.
+      <IconLock size={15} /> <strong>{t('localNote.title')}</strong> {t('localNote.body', { what })}
     </p>
   );
 }
@@ -43,12 +45,12 @@ export function Gate({ reason, title, children }: { reason: 'account' | 'premium
       <div class="gate-actions">
         {reason === 'premium' && (
           <a class="btn btn-primary" href="#/planes" data-testid="see-plans">
-            Ver planes
+            {t('common.seePlans')}
           </a>
         )}
         {!user && (
           <a class={`btn${reason === 'account' ? ' btn-primary' : ''}`} href={signInHref()}>
-            Iniciar sesión
+            {t('common.signIn')}
           </a>
         )}
       </div>
@@ -75,8 +77,14 @@ export function ErrorNote({ error }: { error: unknown }) {
   );
 }
 
-const DATE = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
-export const fmtDate = (ts: number): string => DATE.format(new Date(ts));
+/** Fecha larga en el idioma actual. */
+export const fmtDate = (ts: number): string => formatDate(ts);
+
+/** Fecha del calendario («AAAA-MM-DD», como la de nacimiento) en el idioma actual, sin correrse por la zona horaria. */
+export const fmtCalendarDate = (iso: string): string => {
+  const d = parseIsoDate(iso);
+  return d ? formatDate(dateValue(d)) : iso;
+};
 
 /** Carga asíncrona con estado; `reload` la repite. */
 export function useLoad<T>(fn: () => Promise<T>, deps: unknown[]): { data: T | undefined; error: unknown; loading: boolean; reload: () => void } {
@@ -109,6 +117,14 @@ export function useLoad<T>(fn: () => Promise<T>, deps: unknown[]): { data: T | u
   return { data, error, loading, reload };
 }
 
-/** Un error del servicio que corresponde mostrar como puerta (cuenta o premium). */
-export const gateReason = (e: unknown): 'account' | 'premium' | null =>
-  isServiceError(e, 'premium-required') ? 'premium' : isServiceError(e, 'auth-required') ? 'account' : null;
+/** Un error del servicio que corresponde mostrar como puerta (cuenta, edad o premium). */
+export const gateReason = (e: unknown): AccessReason | null =>
+  isServiceError(e, 'premium-required')
+    ? 'premium'
+    : isServiceError(e, 'auth-required')
+      ? 'account'
+      : isServiceError(e, 'age-required')
+        ? 'age-unknown'
+        : isServiceError(e, 'age-restricted')
+          ? 'age'
+          : null;

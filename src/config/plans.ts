@@ -6,7 +6,12 @@
  * una función de plan alcanza con editar este archivo. Cuando exista un
  * servidor, debe aplicar las mismas reglas (ver docs/backend.md): lo que se
  * muestra en la interfaz no reemplaza la validación del servidor.
+ *
+ * Los textos (nombres, resúmenes y etiquetas) están en los archivos de
+ * idioma; aquí se leen en el momento de mostrarlos, en el idioma actual.
  */
+import { t } from '../i18n';
+import { CLUB_MIN_AGE } from './community';
 
 export type PlanId = 'free' | 'premium';
 
@@ -34,15 +39,25 @@ export interface PlanDef {
 export const PLANS: Record<PlanId, PlanDef> = {
   free: {
     id: 'free',
-    name: 'Gratuito',
-    summary: 'Para leer a tu ritmo y participar de las reseñas.',
-    price: 'Sin costo',
+    get name() {
+      return t('plans.free.name');
+    },
+    get summary() {
+      return t('plans.free.summary');
+    },
+    get price() {
+      return t('plans.free.price');
+    },
     limits: { maxDocuments: 5 },
   },
   premium: {
     id: 'premium',
-    name: 'Premium',
-    summary: 'Biblioteca sin límite de cantidad, animación de hoja y el Reading Club.',
+    get name() {
+      return t('plans.premium.name');
+    },
+    get summary() {
+      return t('plans.premium.summary');
+    },
     price: null,
     limits: { maxDocuments: null },
   },
@@ -66,49 +81,72 @@ export interface FeatureDef {
 
 const freeDocs = PLANS.free.limits.maxDocuments;
 
+/** Acceso con su etiqueta, que se lee del archivo de idioma al mostrarla. */
+const access = (allowed: boolean, label: () => string, needsAccount?: boolean): Access => ({
+  allowed,
+  ...(needsAccount ? { needsAccount } : {}),
+  get label() {
+    return label();
+  },
+});
+
 /** Tabla de funciones por plan (la misma que muestra la página «Planes»). */
 export const FEATURES: FeatureDef[] = [
   {
     id: 'bookMode',
-    label: 'Modo libro, con navegación horizontal y vertical',
-    free: { allowed: true, label: 'Incluido' },
-    premium: { allowed: true, label: 'Incluido' },
+    get label() {
+      return t('plans.feature.bookMode');
+    },
+    free: access(true, () => t('plans.access.included')),
+    premium: access(true, () => t('plans.access.included')),
   },
   {
     id: 'focusMode',
-    label: 'Modo renglón',
-    free: { allowed: true, label: 'Incluido' },
-    premium: { allowed: true, label: 'Incluido' },
+    get label() {
+      return t('plans.feature.focusMode');
+    },
+    free: access(true, () => t('plans.access.included')),
+    premium: access(true, () => t('plans.access.included')),
   },
   {
     id: 'library',
-    label: 'Biblioteca personal',
-    free: { allowed: true, label: freeDocs === null ? 'Sin límite de cantidad' : `Hasta ${freeDocs} archivos` },
-    premium: { allowed: true, label: 'Sin límite de cantidad impuesto por el plan' },
+    get label() {
+      return t('plans.feature.library');
+    },
+    free: access(true, () => (freeDocs === null ? t('plans.access.noQuantityLimit') : t('plans.access.upToFiles', { count: freeDocs }))),
+    premium: access(true, () => t('plans.access.noPlanQuantityLimit')),
   },
   {
     id: 'reviewsRead',
-    label: 'Buscar y leer reseñas',
-    free: { allowed: true, label: 'Incluido' },
-    premium: { allowed: true, label: 'Incluido' },
+    get label() {
+      return t('plans.feature.reviewsRead');
+    },
+    free: access(true, () => t('plans.access.included')),
+    premium: access(true, () => t('plans.access.included')),
   },
   {
     id: 'reviewsWrite',
-    label: 'Publicar reseñas y dar likes',
-    free: { allowed: true, needsAccount: true, label: 'Incluido, con cuenta' },
-    premium: { allowed: true, needsAccount: true, label: 'Incluido' },
+    get label() {
+      return t('plans.feature.reviewsWrite');
+    },
+    free: access(true, () => t('plans.access.includedWithAccount'), true),
+    premium: access(true, () => t('plans.access.included'), true),
   },
   {
     id: 'pageCurl',
-    label: 'Animación de hoja de libro',
-    free: { allowed: false, label: 'Acceso premium' },
-    premium: { allowed: true, label: 'Incluida' },
+    get label() {
+      return t('plans.feature.pageCurl');
+    },
+    free: access(false, () => t('plans.access.premium')),
+    premium: access(true, () => t('plans.access.includedFem')),
   },
   {
     id: 'club',
-    label: 'Acceso y participación en el foro (Reading Club)',
-    free: { allowed: false, label: 'Acceso premium' },
-    premium: { allowed: true, needsAccount: true, label: 'Incluidos' },
+    get label() {
+      return t('plans.feature.club', { age: CLUB_MIN_AGE });
+    },
+    free: access(false, () => t('plans.access.premium')),
+    premium: access(true, () => t('plans.access.includedPlural'), true),
   },
 ];
 

@@ -2,18 +2,21 @@
  * Servicio de prueba local: cuentas, reseñas y Reading Club guardados en este
  * dispositivo (IndexedDB), con las mismas reglas que deberá aplicar el
  * servidor: sesión para publicar, un like por persona y reseña, solo el autor
- * edita o borra, y el Reading Club reservado al plan premium.
+ * edita o borra, y el Reading Club reservado a personas de 16 años o más con el plan
+ * premium. La fecha de nacimiento se carga una sola vez.
  *
  * No es autenticación real: no hay servidor, no se mandan correos y lo
  * publicado solo lo ve quien usa este dispositivo. La interfaz lo indica.
  * Las contraseñas no se guardan: se guarda un hash PBKDF2 con sal.
  */
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { CLUB_MIN_AGE } from '../config/community';
 import type { PlanId } from '../config/plans';
+import { t } from '../i18n';
 import { canUse } from '../lib/access';
 import { pendingSubscriptions, type Backend, type PendingAction } from './backend';
 import { ServiceError } from './errors';
-import { fold, isOwner, queryReviews, validateReply, validateReview, validateSignUp, validateThread } from './rules';
+import { fold, isOwner, queryReviews, validateBirthDate, validateReply, validateReview, validateSignUp, validateThread } from './rules';
 import type { ClubReply, ClubThread, Review, ReviewInput, ReviewQuery, SignUpInput, ThreadInput, User } from './types';
 
 type StoredUser = User & { usernameKey: string };
@@ -65,7 +68,9 @@ const publicUser = ({ usernameKey: _k, ...u }: StoredUser): User => u;
 
 export class LocalBackend implements Backend {
   readonly kind = 'local' as const;
-  readonly label = 'Prueba local en este dispositivo';
+  get label(): string {
+    return t('service.local.label');
+  }
   private dbp: Promise<IDBPDatabase<LocalDB>> | null = null;
   private memorySession: string | null = null;
 
@@ -110,17 +115,25 @@ export class LocalBackend implements Backend {
 
   private async requireUser(): Promise<User> {
     const u = await this.currentUser();
-    if (!u) throw new ServiceError('auth-required', 'Iniciá sesión para continuar.');
+    if (!u) throw new ServiceError('auth-required', t('service.authRequired'));
     return u;
   }
 
+  /** Reading Club: sesión, 16 años o más (con la fecha cargada) y plan premium, en ese orden. */
   private async requireClub(): Promise<User> {
     const u = await this.currentUser();
     const access = canUse('club', u);
     if (!access.ok) {
-      throw access.reason === 'account'
-        ? new ServiceError('auth-required', 'Iniciá sesión para entrar al Reading Club.')
-        : new ServiceError('premium-required', 'El Reading Club es parte del plan premium.');
+      switch (access.reason) {
+        case 'account':
+          throw new ServiceError('auth-required', t('service.club.authRequired'));
+        case 'age-unknown':
+          throw new ServiceError('age-required', t('service.club.ageRequired', { age: CLUB_MIN_AGE }));
+        case 'age':
+          throw new ServiceError('age-restricted', t('service.club.ageRestricted', { age: CLUB_MIN_AGE }));
+        default:
+          throw new ServiceError('premium-required', t('service.club.premiumRequired'));
+      }
     }
     return u!;
   }
@@ -128,8 +141,8 @@ export class LocalBackend implements Backend {
   async signUp(input: SignUpInput): Promise<User> {
     const v = validateSignUp(input);
     const d = await this.db();
-    if (await d.getFromIndex('users', 'byEmail', v.email)) throw new ServiceError('exists', 'Ya hay una cuenta con ese correo.');
-    if (await d.getFromIndex('users', 'byUsername', fold(v.username))) throw new ServiceError('exists', 'Ese nombre de usuario ya está en uso.');
+    if (await d.getFromIndex('users', 'byEmail', v.email)) throw new ServiceError('exists', t('service.emailExists'));
+    if (await d.getFromIndex('users', 'byUsername', fold(v.username))) throw new ServiceError('exists', t('service.usernameExists'));
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const hash = await hashPassword(v.password, salt, ITERATIONS);
     const user: StoredUser = { id: uid('u'), username: v.username, usernameKey: fold(v.username), email: v.email, plan: 'free', createdAt: Date.now() };
@@ -144,7 +157,7 @@ export class LocalBackend implements Backend {
     const user = await d.getFromIndex('users', 'byEmail', String(email ?? '').trim().toLowerCase());
     const secret = user && (await d.get('secrets', user.id));
     const ok = !!secret && (await hashPassword(String(password ?? ''), unb64(secret.salt), secret.iterations)) === secret.hash;
-    if (!user || !ok) throw new ServiceError('bad-credentials', 'El correo o la contraseña no coinciden.');
+    if (!user || !ok) throw new ServiceError('bad-credentials', t('service.badCredentials'));
     this.startSession(user.id);
     return publicUser(user);
   }
@@ -160,11 +173,21 @@ export class LocalBackend implements Backend {
   }
 
   async requestPasswordReset(_email: string): Promise<PendingAction> {
-    return {
-      ok: false,
-      message:
-        'La recuperación de contraseña por correo necesita el servidor de cuentas, que todavía no está conectado. En la prueba local no se envían correos.',
-    };
+    return { ok: false, message: t('service.local.passwordReset') };
+  }
+
+  async setBirthDate(date: string): Promise<User> {
+    const u = await this.requireUser();
+    const birthDate = validateBirthDate(date);
+    const d = await this.db();
+    const tx = d.transaction('users', 'readwrite');
+    const stored = (await tx.store.get(u.id))!;
+    // Se carga una sola vez: así no se puede esquivar la edad mínima del club.
+    if (stored.birthDate) throw new ServiceError('forbidden', t('service.birthDateLocked'));
+    const next: StoredUser = { ...stored, birthDate };
+    await tx.store.put(next);
+    await tx.done;
+    return publicUser(next);
   }
 
   // ——— Reseñas ———
@@ -182,13 +205,13 @@ export class LocalBackend implements Backend {
 
   async getReview(id: string): Promise<Review> {
     const r = await (await this.db()).get('reviews', id);
-    if (!r) throw new ServiceError('not-found', 'La reseña ya no existe.');
+    if (!r) throw new ServiceError('not-found', t('service.reviewNotFound'));
     return (await this.withLikes([r]))[0]!;
   }
 
   private async requireWriter(): Promise<User> {
     const u = await this.currentUser();
-    if (!canUse('reviewsWrite', u).ok) throw new ServiceError('auth-required', 'Iniciá sesión para publicar reseñas y dar likes.');
+    if (!canUse('reviewsWrite', u).ok) throw new ServiceError('auth-required', t('service.reviews.authRequired'));
     return u!;
   }
 
@@ -202,8 +225,8 @@ export class LocalBackend implements Backend {
   private async ownReview(id: string): Promise<StoredReview> {
     const u = await this.requireWriter();
     const r = await (await this.db()).get('reviews', id);
-    if (!r) throw new ServiceError('not-found', 'La reseña ya no existe.');
-    if (!isOwner(u, r)) throw new ServiceError('forbidden', 'Solo quien publicó la reseña puede modificarla.');
+    if (!r) throw new ServiceError('not-found', t('service.reviewNotFound'));
+    if (!isOwner(u, r)) throw new ServiceError('forbidden', t('service.reviewNotOwner'));
     return r;
   }
 
@@ -229,8 +252,8 @@ export class LocalBackend implements Backend {
     const reviews = tx.objectStore('reviews');
     const likes = tx.objectStore('likes');
     const r = await reviews.get(id);
-    if (!r) throw new ServiceError('not-found', 'La reseña ya no existe.');
-    if (r.authorId === u.id) throw new ServiceError('forbidden', 'No podés dar like a tu propia reseña.');
+    if (!r) throw new ServiceError('not-found', t('service.reviewNotFound'));
+    if (r.authorId === u.id) throw new ServiceError('forbidden', t('service.ownLike'));
     const key = `${id}|${u.id}`;
     const had = await likes.get(key);
     if (had) await likes.delete(key);
@@ -248,7 +271,7 @@ export class LocalBackend implements Backend {
     await this.requireClub();
     const all = await (await this.db()).getAll('threads');
     return all
-      .filter((t) => (!q.category || t.category === q.category) && (!q.authorId || t.authorId === q.authorId))
+      .filter((th) => (!q.category || th.category === q.category) && (!q.authorId || th.authorId === q.authorId))
       .sort((a, b) => b.lastActivity - a.lastActivity);
   }
 
@@ -256,7 +279,7 @@ export class LocalBackend implements Backend {
     await this.requireClub();
     const d = await this.db();
     const thread = await d.get('threads', id);
-    if (!thread) throw new ServiceError('not-found', 'La conversación ya no existe.');
+    if (!thread) throw new ServiceError('not-found', t('service.threadNotFound'));
     const replies = (await d.getAllFromIndex('replies', 'byThread', id)).sort((a, b) => a.createdAt - b.createdAt);
     return { thread, replies };
   }
@@ -264,22 +287,22 @@ export class LocalBackend implements Backend {
   async createThread(input: ThreadInput): Promise<ClubThread> {
     const u = await this.requireClub();
     const now = Date.now();
-    const t: ClubThread = { ...validateThread(input), id: uid('t'), authorId: u.id, authorName: u.username, createdAt: now, replyCount: 0, lastActivity: now };
-    await (await this.db()).add('threads', t);
-    return t;
+    const th: ClubThread = { ...validateThread(input), id: uid('t'), authorId: u.id, authorName: u.username, createdAt: now, replyCount: 0, lastActivity: now };
+    await (await this.db()).add('threads', th);
+    return th;
   }
 
   private async ownThread(id: string): Promise<ClubThread> {
     const u = await this.requireClub();
-    const t = await (await this.db()).get('threads', id);
-    if (!t) throw new ServiceError('not-found', 'La conversación ya no existe.');
-    if (!isOwner(u, t)) throw new ServiceError('forbidden', 'Solo quien la publicó puede modificar esta conversación.');
-    return t;
+    const th = await (await this.db()).get('threads', id);
+    if (!th) throw new ServiceError('not-found', t('service.threadNotFound'));
+    if (!isOwner(u, th)) throw new ServiceError('forbidden', t('service.threadNotOwner'));
+    return th;
   }
 
   async updateThread(id: string, input: ThreadInput): Promise<ClubThread> {
-    const t = await this.ownThread(id);
-    const next: ClubThread = { ...t, ...validateThread(input), updatedAt: Date.now() };
+    const th = await this.ownThread(id);
+    const next: ClubThread = { ...th, ...validateThread(input), updatedAt: Date.now() };
     await (await this.db()).put('threads', next);
     return next;
   }
@@ -302,12 +325,12 @@ export class LocalBackend implements Backend {
     const text = validateReply(body);
     const d = await this.db();
     const tx = d.transaction(['threads', 'replies'], 'readwrite');
-    const t = await tx.objectStore('threads').get(threadId);
-    if (!t) throw new ServiceError('not-found', 'La conversación ya no existe.');
+    const th = await tx.objectStore('threads').get(threadId);
+    if (!th) throw new ServiceError('not-found', t('service.threadNotFound'));
     const now = Date.now();
     const reply: ClubReply = { id: uid('p'), threadId, body: text, authorId: u.id, authorName: u.username, createdAt: now };
     await tx.objectStore('replies').add(reply);
-    await tx.objectStore('threads').put({ ...t, replyCount: t.replyCount + 1, lastActivity: now });
+    await tx.objectStore('threads').put({ ...th, replyCount: th.replyCount + 1, lastActivity: now });
     await tx.done;
     return reply;
   }
@@ -315,8 +338,8 @@ export class LocalBackend implements Backend {
   private async ownReply(id: string): Promise<ClubReply> {
     const u = await this.requireClub();
     const r = await (await this.db()).get('replies', id);
-    if (!r) throw new ServiceError('not-found', 'La respuesta ya no existe.');
-    if (!isOwner(u, r)) throw new ServiceError('forbidden', 'Solo quien la escribió puede modificar esta respuesta.');
+    if (!r) throw new ServiceError('not-found', t('service.replyNotFound'));
+    if (!isOwner(u, r)) throw new ServiceError('forbidden', t('service.replyNotOwner'));
     return r;
   }
 
@@ -332,8 +355,8 @@ export class LocalBackend implements Backend {
     const d = await this.db();
     const tx = d.transaction(['threads', 'replies'], 'readwrite');
     await tx.objectStore('replies').delete(id);
-    const t = await tx.objectStore('threads').get(r.threadId);
-    if (t) await tx.objectStore('threads').put({ ...t, replyCount: Math.max(0, t.replyCount - 1) });
+    const th = await tx.objectStore('threads').get(r.threadId);
+    if (th) await tx.objectStore('threads').put({ ...th, replyCount: Math.max(0, th.replyCount - 1) });
     await tx.done;
   }
 

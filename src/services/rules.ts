@@ -4,6 +4,8 @@
  * servicio local de prueba y describen lo que el servidor debe validar.
  */
 import { CLUB_CATEGORIES, REVIEW_CATEGORIES, REVIEW_RANKING, TEXT_LIMITS } from '../config/community';
+import { fmtNumber, intlLocale, t } from '../i18n';
+import { BIRTH_YEAR_MIN, birthDateProblem, localDate, type CalendarDate } from '../lib/age';
 import { ServiceError } from './errors';
 import type { Review, ReviewInput, ReviewQuery, ReviewSort, SignUpInput, ThreadInput, User } from './types';
 
@@ -53,47 +55,63 @@ const invalid = (msg: string) => new ServiceError('invalid', msg);
 
 function text(value: unknown, label: string, max: number, min = 1): string {
   const v = typeof value === 'string' ? value.trim() : '';
-  if (v.length < min) throw invalid(min > 1 ? `${label}: al menos ${min} caracteres.` : `Falta completar: ${label.toLowerCase()}.`);
-  if (v.length > max) throw invalid(`${label}: hasta ${max.toLocaleString('es-AR')} caracteres.`);
+  if (v.length < min) {
+    throw invalid(min > 1 ? t('validation.minChars', { label, count: min }) : t('validation.missing', { label: label.toLocaleLowerCase(intlLocale()) }));
+  }
+  if (v.length > max) throw invalid(t('validation.maxChars', { label, count: max, max: fmtNumber(max) }));
   return v;
 }
 
 export function validateReview(input: ReviewInput): ReviewInput {
   const category = String(input.category ?? '');
-  if (!(REVIEW_CATEGORIES as readonly string[]).includes(category)) throw invalid('Elegí una categoría.');
+  if (!(REVIEW_CATEGORIES as readonly string[]).includes(category)) throw invalid(t('validation.category'));
   return {
-    bookTitle: text(input.bookTitle, 'Nombre del libro', TEXT_LIMITS.bookTitle),
-    bookAuthor: text(input.bookAuthor, 'Autor del libro', TEXT_LIMITS.bookAuthor),
+    bookTitle: text(input.bookTitle, t('field.bookTitle'), TEXT_LIMITS.bookTitle),
+    bookAuthor: text(input.bookAuthor, t('field.bookAuthor'), TEXT_LIMITS.bookAuthor),
     category,
-    title: text(input.title, 'Título de la reseña', TEXT_LIMITS.reviewTitle),
-    body: text(input.body, 'Reseña', TEXT_LIMITS.reviewBody),
+    title: text(input.title, t('field.reviewTitle'), TEXT_LIMITS.reviewTitle),
+    body: text(input.body, t('field.reviewBody'), TEXT_LIMITS.reviewBody),
     spoiler: !!input.spoiler,
   };
 }
 
 export function validateThread(input: ThreadInput): ThreadInput {
   const category = String(input.category ?? '');
-  if (!(CLUB_CATEGORIES as readonly string[]).includes(category)) throw invalid('Elegí una categoría.');
+  if (!(CLUB_CATEGORIES as readonly string[]).includes(category)) throw invalid(t('validation.category'));
   return {
-    title: text(input.title, 'Título', TEXT_LIMITS.threadTitle),
-    body: text(input.body, 'Contenido', TEXT_LIMITS.threadBody),
+    title: text(input.title, t('field.threadTitle'), TEXT_LIMITS.threadTitle),
+    body: text(input.body, t('field.threadBody'), TEXT_LIMITS.threadBody),
     category,
   };
 }
 
-export const validateReply = (body: string): string => text(body, 'Respuesta', TEXT_LIMITS.replyBody);
+export const validateReply = (body: string): string => text(body, t('field.reply'), TEXT_LIMITS.replyBody);
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateSignUp(input: SignUpInput): SignUpInput {
-  const username = text(input.username, 'Nombre de usuario', TEXT_LIMITS.username.max, TEXT_LIMITS.username.min);
-  if (!/^[\p{L}\p{N}_.-]+$/u.test(username)) throw invalid('Nombre de usuario: solo letras, números, punto, guion y guion bajo, sin espacios.');
-  const email = text(input.email, 'Correo electrónico', 200).toLowerCase();
-  if (!EMAIL.test(email)) throw invalid('El correo electrónico no parece válido.');
+  const username = text(input.username, t('field.username'), TEXT_LIMITS.username.max, TEXT_LIMITS.username.min);
+  if (!/^[\p{L}\p{N}_.-]+$/u.test(username)) throw invalid(t('validation.usernameChars'));
+  const email = text(input.email, t('field.email'), 200).toLowerCase();
+  if (!EMAIL.test(email)) throw invalid(t('validation.email'));
   const password = typeof input.password === 'string' ? input.password : '';
-  if (password.length < TEXT_LIMITS.password.min) throw invalid(`La contraseña necesita al menos ${TEXT_LIMITS.password.min} caracteres.`);
-  if (password.length > TEXT_LIMITS.password.max) throw invalid('La contraseña es demasiado larga.');
+  if (password.length < TEXT_LIMITS.password.min) throw invalid(t('validation.passwordShort', { count: TEXT_LIMITS.password.min }));
+  if (password.length > TEXT_LIMITS.password.max) throw invalid(t('validation.passwordLong'));
   return { username, email, password };
+}
+
+/**
+ * Fecha de nacimiento: «AAAA-MM-DD», una fecha que exista, no futura y de
+ * 1900 en adelante. Devuelve la fecha normalizada.
+ */
+export function validateBirthDate(value: unknown, today: CalendarDate = localDate()): string {
+  const v = typeof value === 'string' ? value.trim() : '';
+  if (!v) throw invalid(t('validation.missing', { label: t('field.birthDate').toLocaleLowerCase(intlLocale()) }));
+  const problem = birthDateProblem(v, today);
+  if (problem === 'future') throw invalid(t('validation.birthFuture'));
+  if (problem === 'too-old') throw invalid(t('validation.birthTooOld', { year: BIRTH_YEAR_MIN }));
+  if (problem) throw invalid(t('validation.birthInvalid'));
+  return v;
 }
 
 // ——— Propiedad ———

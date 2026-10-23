@@ -1,6 +1,7 @@
 /** Reseñas de la comunidad: buscar, filtrar, ordenar, leer, publicar y dar likes. */
 import { useEffect, useState } from 'preact/hooks';
-import { REVIEW_CATEGORIES, TEXT_LIMITS } from '../config/community';
+import { REVIEW_CATEGORIES, TEXT_LIMITS, reviewCategoryLabel } from '../config/community';
+import { t } from '../i18n';
 import { allowed } from '../lib/access';
 import { navigate, signInHref } from '../router';
 import { useAccount } from '../services/account';
@@ -23,41 +24,41 @@ export function ReviewsPage() {
   return (
     <section>
       <PageHead
-        title="Reseñas"
-        lead="Lo que la comunidad opina de sus lecturas. Buscá un libro o un autor, o contá qué te pareció."
+        title={t('reviews.title')}
+        lead={t('reviews.lead')}
         actions={
           <a class="btn btn-primary" href={write} data-testid="write-review">
-            <IconEdit size={18} /> Escribir reseña
+            <IconEdit size={18} /> {t('reviews.write')}
           </a>
         }
       />
-      <LocalModeNote what="Las reseñas y los likes" />
+      <LocalModeNote what={t('localNote.reviews')} />
 
       <div class="filters">
         <label class="search">
           <IconSearch size={18} />
           <input
             type="search"
-            placeholder="Buscar por libro o autor"
-            aria-label="Buscar por libro o autor"
+            placeholder={t('reviews.search')}
+            aria-label={t('reviews.search')}
             value={text}
             onInput={(e) => setText(e.currentTarget.value)}
             data-testid="review-search"
           />
         </label>
-        <select class="input select" aria-label="Categoría" value={category} onChange={(e) => setCategory(e.currentTarget.value)} data-testid="review-category">
-          <option value="">Todas las categorías</option>
+        <select class="input select" aria-label={t('field.category')} value={category} onChange={(e) => setCategory(e.currentTarget.value)} data-testid="review-category">
+          <option value="">{t('reviews.allCategories')}</option>
           {REVIEW_CATEGORIES.map((c) => (
             <option key={c} value={c}>
-              {c}
+              {reviewCategoryLabel(c)}
             </option>
           ))}
         </select>
-        <div class="segmented" role="radiogroup" aria-label="Ordenar">
+        <div class="segmented" role="radiogroup" aria-label={t('reviews.sort')}>
           {(
             [
-              ['top', 'Más valoradas'],
-              ['recent', 'Más recientes'],
+              ['top', t('reviews.sortTop')],
+              ['recent', t('reviews.sortRecent')],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -81,15 +82,15 @@ export function ReviewsPage() {
 
       <ErrorNote error={list.error} />
       {list.data && list.data.length === 0 && (any.data?.length ?? 0) === 0 && (
-        <EmptyState title="Todavía no hay reseñas">
+        <EmptyState title={t('reviews.empty')}>
           <p>
-            Sé la primera persona en recomendar (o no) un libro. <a href={write}>Escribir una reseña</a>
+            {t('reviews.emptyHint')} <a href={write}>{t('reviews.writeOne')}</a>
           </p>
         </EmptyState>
       )}
       {list.data && list.data.length === 0 && (any.data?.length ?? 0) > 0 && (
-        <EmptyState title="No hay reseñas que coincidan">
-          <p>Probá con otra palabra del título o del autor, o con otra categoría.</p>
+        <EmptyState title={t('reviews.noMatch')}>
+          <p>{t('reviews.noMatchHint')}</p>
         </EmptyState>
       )}
       <div class="review-list" data-testid="review-list">
@@ -105,12 +106,12 @@ function LikeButton({ review, onChanged }: { review: Review; onChanged: (r: Revi
   const { user } = useAccount();
   const [busy, setBusy] = useState(false);
   const mine = isOwner(user, review);
-  const label = `${review.likes} ${review.likes === 1 ? 'like' : 'likes'}`;
+  const label = t('reviews.likes', { count: review.likes });
   if (!user) {
     return (
-      <a class="like" href={signInHref()} title="Iniciá sesión para dar like" data-testid="like">
+      <a class="like" href={signInHref()} title={t('reviews.like.signIn')} data-testid="like">
         <IconHeart size={18} /> <span data-testid="like-count">{review.likes}</span>
-        <span class="visually-hidden"> likes. Iniciá sesión para dar like.</span>
+        <span class="visually-hidden"> {t('reviews.like.guestHidden')}</span>
       </a>
     );
   }
@@ -118,8 +119,8 @@ function LikeButton({ review, onChanged }: { review: Review; onChanged: (r: Revi
     <button
       class={`like${review.likedByMe ? ' is-on' : ''}`}
       aria-pressed={review.likedByMe}
-      aria-label={mine ? `${label}. Es tu reseña` : review.likedByMe ? `Quitar like (${label})` : `Dar like (${label})`}
-      title={mine ? 'No podés dar like a tu propia reseña' : undefined}
+      aria-label={mine ? t('reviews.like.own', { likes: label }) : review.likedByMe ? t('reviews.like.remove', { likes: label }) : t('reviews.like.give', { likes: label })}
+      title={mine ? t('reviews.like.ownTitle') : undefined}
       disabled={busy || mine}
       data-testid="like"
       onClick={async () => {
@@ -143,20 +144,21 @@ function ReviewActions({ review, onDeleted }: { review: Review; onDeleted: () =>
   if (!isOwner(user, review)) return null;
   return (
     <>
-      <a class="icon-btn" href={`#/resenas/${review.id}/editar`} aria-label="Editar reseña" data-testid="edit-review">
+      <a class="icon-btn" href={`#/resenas/${review.id}/editar`} aria-label={t('reviews.edit')} data-testid="edit-review">
         <IconEdit size={18} />
       </a>
-      <button class="icon-btn" aria-label="Eliminar reseña" onClick={() => setConfirm(true)} data-testid="delete-review">
+      <button class="icon-btn" aria-label={t('reviews.delete')} onClick={() => setConfirm(true)} data-testid="delete-review">
         <IconTrash size={18} />
       </button>
       {confirm && (
-        <Sheet title="Eliminar reseña" onClose={() => setConfirm(false)}>
+        <Sheet title={t('reviews.delete')} onClose={() => setConfirm(false)}>
           <p>
-            Se eliminará tu reseña <strong>{review.title}</strong>, con sus likes. No se puede deshacer.
+            {t('reviews.deleteBefore')} <strong>{review.title}</strong>
+            {t('reviews.deleteAfter')}
           </p>
           <div class="row-end">
             <button class="btn btn-quiet" onClick={() => setConfirm(false)}>
-              Cancelar
+              {t('common.cancel')}
             </button>
             <button
               class="btn btn-danger"
@@ -167,7 +169,7 @@ function ReviewActions({ review, onDeleted }: { review: Review; onDeleted: () =>
                 onDeleted();
               }}
             >
-              Eliminar
+              {t('common.delete')}
             </button>
           </div>
         </Sheet>
@@ -188,14 +190,14 @@ function ReviewCard({ review, onChanged }: { review: Review; onChanged: () => vo
         <p class="review-book">
           <strong data-testid="review-book">{r.bookTitle}</strong> · <span data-testid="review-author">{r.bookAuthor}</span>
         </p>
-        <span class="tag">{r.category}</span>
+        <span class="tag">{reviewCategoryLabel(r.category)}</span>
       </div>
       <h2 class="review-title">
         <a href={`#/resenas/${r.id}`}>{r.title}</a>
       </h2>
       {r.spoiler && !shown ? (
         <button class="spoiler-cover" onClick={() => setShown(true)} data-testid="spoiler-cover">
-          Contiene spoilers · <span>Mostrar la reseña</span>
+          {t('reviews.spoiler')} · <span>{t('reviews.showReview')}</span>
         </button>
       ) : (
         <p class="review-body">{excerpt}</p>
@@ -203,7 +205,7 @@ function ReviewCard({ review, onChanged }: { review: Review; onChanged: () => vo
       <div class="review-foot">
         <span class="muted">
           {r.authorName} · {fmtDate(r.createdAt)}
-          {r.updatedAt ? ' · editada' : ''}
+          {r.updatedAt ? ` · ${t('common.edited')}` : ''}
         </span>
         <span class="review-tools">
           <LikeButton review={r} onChanged={setR} />
@@ -223,22 +225,22 @@ export function ReviewPage({ id }: { id: string }) {
   return (
     <section class="narrow">
       <a class="back-link" href="#/resenas">
-        <IconBack size={18} /> Reseñas
+        <IconBack size={18} /> {t('reviews.title')}
       </a>
       <ErrorNote error={res.error} />
       {r && (
         <article class="review-full" data-testid="review-full">
           <p class="review-book">
-            <strong>{r.bookTitle}</strong> · {r.bookAuthor} <span class="tag">{r.category}</span>
+            <strong>{r.bookTitle}</strong> · {r.bookAuthor} <span class="tag">{reviewCategoryLabel(r.category)}</span>
           </p>
           <h1 class="page-title">{r.title}</h1>
           <p class="muted">
             {r.authorName} · {fmtDate(r.createdAt)}
-            {r.updatedAt ? ` · editada el ${fmtDate(r.updatedAt)}` : ''}
+            {r.updatedAt ? ` · ${t('reviews.editedOn', { date: fmtDate(r.updatedAt) })}` : ''}
           </p>
           {r.spoiler && !shown ? (
             <button class="spoiler-cover" onClick={() => setShown(true)} data-testid="spoiler-cover">
-              Contiene spoilers · <span>Mostrar la reseña</span>
+              {t('reviews.spoiler')} · <span>{t('reviews.showReview')}</span>
             </button>
           ) : (
             <div class="review-text">
@@ -264,12 +266,12 @@ const EMPTY: ReviewInput = { bookTitle: '', bookAuthor: '', category: '', title:
 export function ReviewFormPage({ id }: { id?: string }) {
   const { user, ready } = useAccount();
   const existing = useLoad(async () => (id ? (await backend()).getReview(id) : null), [id]);
-  if (!ready || (id && existing.loading)) return <p class="loading">Cargando…</p>;
+  if (!ready || (id && existing.loading)) return <p class="loading">{t('common.loading')}</p>;
   if (!allowed('reviewsWrite', user)) {
     return (
       <section class="narrow">
-        <Gate reason="account" title="Iniciá sesión para publicar una reseña">
-          <p>Leer reseñas no requiere cuenta; para publicarlas y dar likes, sí. La cuenta gratuita alcanza.</p>
+        <Gate reason="account" title={t('reviews.gate.title')}>
+          <p>{t('reviews.gate.body')}</p>
         </Gate>
       </section>
     );
@@ -277,7 +279,7 @@ export function ReviewFormPage({ id }: { id?: string }) {
   if (id && existing.data && !isOwner(user, existing.data)) {
     return (
       <section class="narrow">
-        <p class="form-error">Solo quien publicó la reseña puede editarla.</p>
+        <p class="form-error">{t('reviews.form.notOwner')}</p>
       </section>
     );
   }
@@ -302,9 +304,9 @@ function ReviewForm({ id, initial }: { id?: string; initial: ReviewInput }) {
   return (
     <section class="narrow">
       <a class="back-link" href={id ? `#/resenas/${id}` : '#/resenas'}>
-        <IconBack size={18} /> {id ? 'Volver a la reseña' : 'Reseñas'}
+        <IconBack size={18} /> {id ? t('reviews.form.back') : t('reviews.title')}
       </a>
-      <PageHead title={id ? 'Editar reseña' : 'Escribir una reseña'} />
+      <PageHead title={id ? t('reviews.edit') : t('reviews.form.newTitle')} />
       <form
         class="form"
         onSubmit={async (e) => {
@@ -324,39 +326,39 @@ function ReviewForm({ id, initial }: { id?: string; initial: ReviewInput }) {
       >
         <div class="form-row">
           <label class="field">
-            <span class="field-label">Nombre del libro</span>
+            <span class="field-label">{t('field.bookTitle')}</span>
             <input class="input" required maxLength={TEXT_LIMITS.bookTitle} value={f.bookTitle} onInput={upd('bookTitle')} name="bookTitle" />
           </label>
           <label class="field">
-            <span class="field-label">Autor del libro</span>
+            <span class="field-label">{t('field.bookAuthor')}</span>
             <input class="input" required maxLength={TEXT_LIMITS.bookAuthor} value={f.bookAuthor} onInput={upd('bookAuthor')} name="bookAuthor" />
           </label>
         </div>
         <label class="field">
-          <span class="field-label">Categoría o género</span>
+          <span class="field-label">{t('reviews.form.category')}</span>
           <select class="input select" required value={f.category} onChange={upd('category')} name="category">
-            <option value="">Elegí una categoría</option>
+            <option value="">{t('field.categoryPlaceholder')}</option>
             {REVIEW_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {reviewCategoryLabel(c)}
               </option>
             ))}
           </select>
         </label>
         <label class="field">
-          <span class="field-label">Título de la reseña</span>
+          <span class="field-label">{t('field.reviewTitle')}</span>
           <input class="input" required maxLength={TEXT_LIMITS.reviewTitle} value={f.title} onInput={upd('title')} name="title" />
         </label>
         <label class="field">
-          <span class="field-label">Reseña</span>
+          <span class="field-label">{t('field.reviewBody')}</span>
           <textarea class="input textarea" required rows={9} maxLength={TEXT_LIMITS.reviewBody} value={f.body} onInput={upd('body')} name="body" />
         </label>
         <label class="check">
-          <input type="checkbox" checked={f.spoiler} onChange={upd('spoiler')} name="spoiler" /> Contiene spoilers (se oculta hasta que alguien decida verla)
+          <input type="checkbox" checked={f.spoiler} onChange={upd('spoiler')} name="spoiler" /> {t('reviews.form.spoiler')}
         </label>
         <ErrorNote error={error} />
         <button class="btn btn-primary btn-block" disabled={busy} data-testid="review-submit">
-          {id ? 'Guardar cambios' : 'Publicar reseña'}
+          {id ? t('common.saveChanges') : t('reviews.form.publish')}
         </button>
       </form>
     </section>

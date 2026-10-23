@@ -10,10 +10,14 @@ import './styles/reader.css';
 import './styles/sections.css';
 import { App } from './app';
 import { readDevParam } from './dev/devtools';
+import { initLocale, readLangParam } from './i18n';
 import { applyTheme, getSettings } from './lib/settings';
 import { initAccount } from './services/account';
 
 readDevParam();
+// El idioma se elige antes de mostrar nada: los textos se leen al dibujar.
+readLangParam();
+initLocale();
 applyTheme(getSettings());
 void initAccount();
 render(<App />, document.getElementById('app')!);

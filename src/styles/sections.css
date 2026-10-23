@@ -808,3 +808,33 @@
   padding: 0 14px;
   white-space: nowrap;
 }
+
+/* ——— Edad mínima del Reading Club ——— */
+.club-age-note {
+  margin: 14px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.age-card {
+  margin: 18px 0;
+}
+.age-card .gate-title {
+  margin: 0 0 6px;
+}
+.age-card > p {
+  margin: 0 0 8px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.birth-card {
+  margin-top: 8px;
+}
+.birth-date {
+  margin: 0;
+  font-family: var(--font-literata);
+  font-size: 18px;
+}
+.birth-card .muted {
+  margin: 4px 0 0;
+  font-size: 14px;
+}

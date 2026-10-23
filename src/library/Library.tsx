@@ -5,6 +5,7 @@
  * plan (config/plans.ts).
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { fmtNumber, t, type Key } from '../i18n';
 import { importFile } from '../import';
 import { ocr } from '../import/ocr';
 import { ImportError, type ImportProgress, type ImportResult } from '../import/types';
@@ -17,32 +18,35 @@ import { ServiceError, isServiceError } from '../services/errors';
 import { Sheet } from '../ui/Sheet';
 import { IconLock, IconPlus, IconSpark, IconTrash, IconWarn } from '../ui/icons';
 
-const PHASES: Record<ImportProgress['phase'], string> = {
-  read: 'Leyendo el archivo',
-  convert: 'Convirtiendo el documento',
-  analyze: 'Analizando páginas',
-  images: 'Preparando imágenes',
-  save: 'Guardando en este dispositivo',
+const PHASES: Record<ImportProgress['phase'], Key> = {
+  read: 'import.phase.read',
+  convert: 'import.phase.convert',
+  analyze: 'import.phase.analyze',
+  images: 'import.phase.images',
+  save: 'import.phase.save',
 };
 
 function kindLabel(d: DocMeta): string {
-  if (d.kind === 'docx') return 'Word';
-  if (d.pdfKind === 'scanned') return d.ocr === 'done' ? 'PDF escaneado · texto reconocido' : 'PDF escaneado';
-  if (d.pdfKind === 'mixed') return 'PDF con páginas escaneadas';
-  return 'PDF con texto';
+  if (d.kind === 'docx') return t('library.kind.word');
+  if (d.pdfKind === 'scanned') return d.ocr === 'done' ? t('library.kind.scannedDone') : t('library.kind.scanned');
+  if (d.pdfKind === 'mixed') return t('library.kind.mixed');
+  return t('library.kind.text');
 }
 
 function ago(ts?: number): string {
   if (!ts) return '';
   const s = (Date.now() - ts) / 1000;
-  if (s < 90) return 'recién';
-  if (s < 3600) return `hace ${Math.round(s / 60)} min`;
-  if (s < 86400) return `hace ${Math.round(s / 3600)} h`;
+  if (s < 90) return t('time.justNow');
+  if (s < 3600) return t('time.minutesAgo', { count: Math.round(s / 60) });
+  if (s < 86400) return t('time.hoursAgo', { count: Math.round(s / 3600) });
   const d = Math.round(s / 86400);
-  return d === 1 ? 'ayer' : `hace ${d} días`;
+  return d === 1 ? t('time.yesterday') : t('time.daysAgo', { count: d });
 }
 
-const fmtSize = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
+const fmtSize = (n: number) =>
+  n < 1024 * 1024
+    ? t('units.kb', { n: fmtNumber(Math.max(1, Math.round(n / 1024))) })
+    : t('units.mb', { n: fmtNumber(n / 1024 / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) });
 
 interface ImportState {
   name: string;
@@ -53,10 +57,8 @@ interface ImportState {
 
 function limitMessage(u: LibraryUsage): { message: string; help: string } {
   return {
-    message: `Alcanzaste el límite de ${u.limit} archivos del plan gratuito.`,
-    help: u.over
-      ? `Tenés ${u.count} documentos y el plan gratuito permite ${u.limit}. Podés seguir leyéndolos todos; para cargar uno nuevo, eliminá algunos o pasate a premium, que no tiene límite de cantidad.`
-      : 'Cada documento cuenta como un archivo, sin importar sus páginas. Para cargar otro, eliminá uno que ya no uses o pasate a premium, que no tiene límite de cantidad.',
+    message: t('library.limit.reached', { count: u.limit ?? 0 }),
+    help: u.over ? t('library.limit.overHelp', { count: u.count, limit: u.limit ?? 0 }) : t('library.limit.help'),
   };
 }
 
@@ -147,7 +149,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
     >
       <div class="lib-main">
         <div class="lib-title-row">
-          <h1 class="page-title">Tu biblioteca</h1>
+          <h1 class="page-title">{t('library.title')}</h1>
           <span class={`lib-count${quota.full ? ' is-full' : ''}`} data-testid="library-count">
             {quota.label}
           </span>
@@ -156,9 +158,9 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
         {owner && deviceDocs > 0 && (
           <div class="notice" data-testid="claim-docs">
             <p>
-              {deviceDocs === 1 ? 'Hay 1 documento cargado' : `Hay ${deviceDocs} documentos cargados`} sin cuenta en este dispositivo.
-              {room === 0 && ` Para sumarlos a tu biblioteca necesitás lugar: el plan gratuito permite ${quota.limit} archivos.`}
-              {room !== null && room > 0 && room < deviceDocs && ` Con el plan gratuito entran ${room} más: se suman los más recientes.`}
+              {t('library.claim.found', { count: deviceDocs })}
+              {room === 0 && ` ${t('library.claim.noRoom', { count: quota.limit ?? 0 })}`}
+              {room !== null && room > 0 && room < deviceDocs && ` ${t('library.claim.someRoom', { count: room })}`}
             </p>
             {room !== 0 && (
               <button
@@ -169,20 +171,21 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                 }}
                 data-testid="claim-docs-btn"
               >
-                {room !== null && room < deviceDocs ? `Sumar ${room} a mi biblioteca` : 'Sumarlos a mi biblioteca'}
+                {room !== null && room < deviceDocs ? t('library.claim.addSome', { count: room }) : t('library.claim.addAll')}
               </button>
             )}
           </div>
         )}
 
         {recent && recentP && (
-          <section class="continue" aria-label="Seguir leyendo">
+          <section class="continue" aria-label={t('library.continue')}>
             <button class="continue-card" onClick={() => onOpen(recent.id)} data-testid="continue-card">
-              <span class="continue-kicker">Seguir leyendo</span>
+              <span class="continue-kicker">{t('library.continue')}</span>
               <span class="continue-title">{recent.title}</span>
               {recentP.snippet && <span class="continue-snippet">«{recentP.snippet}»</span>}
               <span class="continue-meta">
-                {Math.round(recentP.pct * 100)} %{recentP.pageLabel ? ` · pág. ${recentP.pageLabel}` : ''} · {ago(recentP.updatedAt)}
+                {t('common.percent', { n: Math.round(recentP.pct * 100) })}
+                {recentP.pageLabel ? ` · ${t('reader.pageShort', { page: recentP.pageLabel })}` : ''} · {ago(recentP.updatedAt)}
               </span>
             </button>
           </section>
@@ -199,26 +202,26 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
             onChange={(e) => void handleFiles((e.target as HTMLInputElement).files)}
           />
           <label for="file-input" class="btn btn-primary btn-add">
-            <IconPlus /> Cargar documento
+            <IconPlus /> {t('library.add')}
           </label>
-          <p class="add-hint">Word (.docx) o PDF. {matchMedia('(pointer:fine)').matches ? 'También podés arrastrarlo aquí.' : ''}</p>
+          <p class="add-hint">
+            {t('library.addHint')} {matchMedia('(pointer:fine)').matches ? t('library.dragHint') : ''}
+          </p>
         </section>
         {quota.full && (
           <p class="limit-note" data-testid="limit-note">
             <IconSpark size={16} />{' '}
-            {quota.over
-              ? `Tenés ${quota.count} documentos y el plan gratuito permite ${quota.limit}: podés seguir leyéndolos, pero para cargar nuevos tenés que liberar lugar.`
-              : `Llegaste a los ${quota.limit} archivos del plan gratuito.`}{' '}
-            <a href="#/planes">Ver el plan premium</a>
+            {quota.over ? t('library.limit.overNote', { count: quota.count, limit: quota.limit ?? 0 }) : t('library.limit.fullNote', { count: quota.limit ?? 0 })}{' '}
+            <a href="#/planes">{t('library.seePremium')}</a>
           </p>
         )}
 
-        <section class="shelf" aria-label="Biblioteca">
+        <section class="shelf" aria-label={t('nav.library')}>
           {docs && docs.length === 0 && (
             <div class="empty">
-              <p class="empty-title">Tu biblioteca está vacía</p>
-              <p>Cargá un documento de Word o un PDF para empezar. Se guarda solo en este dispositivo.</p>
-              {quota.limit !== null && <p class="muted">Con el plan gratuito podés tener hasta {quota.limit} documentos.</p>}
+              <p class="empty-title">{t('library.empty')}</p>
+              <p>{t('library.emptyHint')}</p>
+              {quota.limit !== null && <p class="muted">{t('library.emptyLimit', { count: quota.limit })}</p>}
             </div>
           )}
           <ul class="doc-list">
@@ -234,18 +237,18 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                       <span class="doc-title">{d.title}</span>
                       <span class="doc-meta">
                         {kindLabel(d)}
-                        {d.pages ? ` · ${d.pages.length} pág.` : ''} · {fmtSize(d.size)}
-                        {busy ? ' · reconociendo texto…' : ''}
+                        {d.pages ? ` · ${t('library.pagesShort', { count: d.pages.length })}` : ''} · {fmtSize(d.size)}
+                        {busy ? ` · ${t('library.ocrRunning')}` : ''}
                       </span>
                       <span class="doc-progress">
                         <span class="bar">
                           <span style={{ width: `${pct}%` }} />
                         </span>
-                        <span class="doc-pct">{p ? `${pct} %` : 'Sin empezar'}</span>
+                        <span class="doc-pct">{p ? t('common.percent', { n: pct }) : t('library.notStarted')}</span>
                       </span>
                     </span>
                   </button>
-                  <button class="icon-btn doc-del" aria-label={`Eliminar ${d.title}`} onClick={() => setConfirm(d)} data-testid="doc-delete">
+                  <button class="icon-btn doc-del" aria-label={t('library.deleteLabel', { title: d.title })} onClick={() => setConfirm(d)} data-testid="doc-delete">
                     <IconTrash />
                   </button>
                 </li>
@@ -257,19 +260,23 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
 
       <footer class="lib-foot">
         <p>
-          <IconLock size={15} /> Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor.
-          {usage && <> Espacio usado: {usage}.</>}
+          <IconLock size={15} /> {t('library.privacy')}
+          {usage && ` ${t('library.usage', { size: usage })}`}
         </p>
       </footer>
 
       {imp && (
-        <Sheet title={imp.result ? 'Documento listo' : imp.error ? 'No se pudo cargar' : 'Cargando documento'} onClose={imp.result || imp.error ? () => setImp(null) : undefined} testId="import-sheet">
+        <Sheet
+          title={imp.result ? t('import.done') : imp.error ? t('import.failed') : t('import.loading')}
+          onClose={imp.result || imp.error ? () => setImp(null) : undefined}
+          testId="import-sheet"
+        >
           <p class="imp-name">{imp.name}</p>
           {!imp.result && !imp.error && (
             <div data-testid="import-progress">
               <p class="ocr-line">
-                {imp.progress ? PHASES[imp.progress.phase] : 'Preparando'}
-                {imp.progress && imp.progress.total > 1 ? ` (${Math.min(imp.progress.done + 1, imp.progress.total)} de ${imp.progress.total})` : '…'}
+                {imp.progress ? t(PHASES[imp.progress.phase]) : t('import.phase.prepare')}
+                {imp.progress && imp.progress.total > 1 ? ` (${t('common.nOfTotal', { n: Math.min(imp.progress.done + 1, imp.progress.total), total: imp.progress.total })})` : '…'}
               </p>
               <div class="progress">
                 <div class="progress-fill" style={{ width: `${imp.progress && imp.progress.total ? Math.round((imp.progress.done / imp.progress.total) * 100) : 5}%` }} />
@@ -284,11 +291,11 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
               {imp.error.help && <p>{imp.error.help}</p>}
               <div class="row-end">
                 <button class="btn" onClick={() => setImp(null)}>
-                  Entendido
+                  {t('common.understood')}
                 </button>
                 {imp.error.limit && (
                   <a class="btn btn-primary" href="#/planes" onClick={() => setImp(null)} data-testid="limit-plans">
-                    Ver el plan premium
+                    {t('library.seePremium')}
                   </a>
                 )}
               </div>
@@ -300,7 +307,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                 <strong>{imp.result.meta.title}</strong>
                 <br />
                 {kindLabel(imp.result.meta)}
-                {imp.result.meta.pages ? ` · ${imp.result.meta.pages.length} páginas` : ''}
+                {imp.result.meta.pages ? ` · ${t('library.pages', { count: imp.result.meta.pages.length })}` : ''}
               </p>
               {imp.result.meta.warnings.map((w) => (
                 <p class="hint hint-warn" key={w}>
@@ -317,7 +324,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                   onOpen(id);
                 }}
               >
-                Abrir
+                {t('common.open')}
               </button>
             </div>
           )}
@@ -325,13 +332,13 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
       )}
 
       {confirm && (
-        <Sheet title="Eliminar documento" onClose={() => setConfirm(null)} testId="delete-sheet">
+        <Sheet title={t('library.delete.title')} onClose={() => setConfirm(null)} testId="delete-sheet">
           <p>
-            Se eliminará <strong>{confirm.title}</strong> de este dispositivo, junto con su texto, sus imágenes y tu progreso de lectura. No se puede deshacer.
+            {t('library.delete.before')} <strong>{confirm.title}</strong> {t('library.delete.after')}
           </p>
           <div class="row-end">
             <button class="btn btn-quiet" onClick={() => setConfirm(null)}>
-              Cancelar
+              {t('common.cancel')}
             </button>
             <button
               class="btn btn-danger"
@@ -344,7 +351,7 @@ export function Library({ onOpen }: { onOpen: (id: string) => void }) {
                 await refresh();
               }}
             >
-              Eliminar
+              {t('common.delete')}
             </button>
           </div>
         </Sheet>

@@ -198,3 +198,30 @@ export async function asPremium(page: Page) {
   await setPlan(page, 'premium');
   return u;
 }
+
+// ——— Reading Club: fecha de nacimiento (16 años o más, D09) ———
+
+/** Fecha de nacimiento («AAAA-MM-DD») de alguien que cumplió `years` años hace unos meses. */
+export function birthDateForAge(years: number): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear() - years, now.getMonth() - 3, 15, 12);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Primera entrada al Reading Club: carga y confirma la fecha de nacimiento. */
+export async function enterBirthDate(page: Page, date = birthDateForAge(30)) {
+  await page.goto('/#/club');
+  await expect(page.locator('[data-testid=club-birth]')).toBeVisible();
+  await page.fill('[name=birthDate]', date);
+  await page.click('[data-testid=birth-submit]');
+  await expect(page.locator('[data-testid=birth-confirm-sheet]')).toBeVisible();
+  await page.click('[data-testid=birth-confirm]');
+  await expect(page.locator('[data-testid=club-birth]')).toHaveCount(0);
+}
+
+/** Cuenta premium de una persona adulta, lista para el Reading Club. */
+export async function asClubMember(page: Page) {
+  const u = await asPremium(page);
+  await enterBirthDate(page);
+  return u;
+}

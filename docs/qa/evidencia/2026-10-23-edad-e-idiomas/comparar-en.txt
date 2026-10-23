@@ -1,0 +1,264 @@
+
+=== biblioteca-vacia
+   -html lang=es
+   +html lang=en
+
+=== importado-docx
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 3,3 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 3.3 MB.
+   -html lang=es
+   +html lang=en
+
+=== importado-pdf
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 4,6 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 4.6 MB.
+   -html lang=es
+   +html lang=en
+
+=== importado-escaneado
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   +PDF
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   -html lang=es
+   +html lang=en
+
+=== error-doc-antiguo
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   +PDF
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   -html lang=es
+   +html lang=en
+
+=== biblioteca-con-documentos
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   +PDF
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   -html lang=es
+   +html lang=en
+
+=== borrar-documento
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   +PDF
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   -html lang=es
+   +html lang=en
+
+=== lector-libro
+   -html lang=es
+   +html lang=en
+
+=== ajustes-lectura
+   -1,6
+   +1.6
+   -html lang=es
+   +html lang=en
+
+=== indice
+   -html lang=es
+   +html lang=en
+
+=== lector-renglon
+   -html lang=es
+   +html lang=en
+
+=== biblioteca-seguir-leyendo
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   +PDF
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,1 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   -html lang=es
+   +html lang=en
+
+=== lector-escaneado
+   -html lang=es
+   +html lang=en
+
+=== escaneado-renglon
+   -html lang=es
+   +html lang=en
+
+=== resenas-sin-cuenta
+   -html lang=es
+   +html lang=en
+
+=== club-sin-cuenta
+   -html lang=es
+   +html lang=en
+
+=== planes-sin-cuenta
+   -html lang=es
+   +html lang=en
+
+=== cuenta-sin-sesion
+   -html lang=es
+   +html lang=en
+
+=== ingresar-error
+   -html lang=es
+   +html lang=en
+
+=== recuperar
+   -html lang=es
+   +html lang=en
+
+=== registro-no-coinciden
+   -html lang=es
+   +html lang=en
+
+=== perfil-gratuito
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== planes-gratuito
+   -html lang=es
+   +html lang=en
+
+=== club-fecha
+   -html lang=es
+   +html lang=en
+
+=== club-fecha-confirmar
+   -Tu fecha de nacimiento: 10 de mayo de 1990
+   +Tu fecha de nacimiento: May 10, 1990
+   -html lang=es
+   +html lang=en
+
+=== club-gratuito
+   -html lang=es
+   +html lang=en
+
+=== resena-formulario
+   -html lang=es
+   +html lang=en
+
+=== resena-publicada
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== resenas-con-una
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== borrar-resena
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== resena-error-validacion
+   -html lang=es
+   +html lang=en
+
+=== panel-desarrollo
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el October 23, 2026
+   -10 de mayo de 1990
+   +May 10, 1990
+   -Laberintos — Ficciones · 23 de octubre de 2026 ·  0
+   +Laberintos — Ficciones · October 23, 2026 ·  0
+   -html lang=es
+   +html lang=en
+
+=== perfil-premium
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el October 23, 2026
+   -10 de mayo de 1990
+   +May 10, 1990
+   -Laberintos — Ficciones · 23 de octubre de 2026 ·  0
+   +Laberintos — Ficciones · October 23, 2026 ·  0
+   -html lang=es
+   +html lang=en
+
+=== club-premium-vacio
+   -html lang=es
+   +html lang=en
+
+=== club-nueva
+   -html lang=es
+   +html lang=en
+
+=== club-hilo
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== club-borrar-hilo
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== club-premium-lista
+   -lectora_qa · 23 de octubre de 2026 · 1 respuesta
+   +lectora_qa · October 23, 2026 · 1 respuesta
+   -html lang=es
+   +html lang=en
+
+=== club-categoria-vacia
+   -html lang=es
+   +html lang=en
+
+=== perfil-premium-con-publicaciones
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el October 23, 2026
+   -10 de mayo de 1990
+   +May 10, 1990
+   -Laberintos — Ficciones · 23 de octubre de 2026 ·  0
+   +Laberintos — Ficciones · October 23, 2026 ·  0
+   -Hilo de prueba · Textos propios · 23 de octubre de 2026
+   -Respuesta: «Una respuesta.» · 23 de octubre de 2026
+   +Hilo de prueba · Textos propios · October 23, 2026
+   +Respuesta: «Una respuesta.» · October 23, 2026
+   -html lang=es
+   +html lang=en
+
+=== planes-premium
+   -html lang=es
+   +html lang=en
+
+Pantallas con diferencias: 41 de 41

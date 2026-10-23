@@ -3,6 +3,7 @@
  * reconstruye el texto en orden de lectura, recorta las imágenes y conserva la
  * numeración original de las páginas.
  */
+import { t } from '../i18n';
 import { closePdf, openPdf, pdfjs, renderPageToCanvas, type PDFDocumentProxy, type PDFPageProxy } from '../lib/pdfjs';
 import { escapeHtml, joinLines, stripExtension } from '../lib/text';
 import type { Block, DocMeta, PageInfo, TocEntry } from '../lib/types';
@@ -154,10 +155,14 @@ function pageLabel(labels: string[] | null, i: number): string {
   return l ? l : String(i + 1);
 }
 
+/**
+ * Aviso que ocupa el lugar de una página escaneada en el texto. Se guarda con
+ * el documento, en el idioma del momento de la importación o del OCR.
+ */
 export function scanNotice(pageLabelText: string, state: 'pending' | 'failed' | 'low'): string {
-  if (state === 'failed') return `Página ${escapeHtml(pageLabelText)}: no se pudo reconocer el texto. Consultá la página original.`;
+  if (state === 'failed') return escapeHtml(t('import.pdf.scanFailed', { page: pageLabelText }));
   if (state === 'low') return '';
-  return `Página ${escapeHtml(pageLabelText)}: es una imagen escaneada y todavía no se reconoció su texto.`;
+  return escapeHtml(t('import.pdf.scanPending', { page: pageLabelText }));
 }
 
 export async function importPdf(id: string, file: File, onProgress: (p: ImportProgress) => void): Promise<ImportResult> {
@@ -257,7 +262,7 @@ export async function importPdf(id: string, file: File, onProgress: (p: ImportPr
       perPage[i]!.forEach((it, idx) => {
         if (it.kind === 'fig') {
           const a = figAsset.get(it.box);
-          if (a) blocks.push({ t: 'img', html: '', len: 0, page: i, img: a.key, w: a.w, h: a.h, alt: `Imagen ${++figN} (página ${info.label})` });
+          if (a) blocks.push({ t: 'img', html: '', len: 0, page: i, img: a.key, w: a.w, h: a.h, alt: t('import.pdf.imageAlt', { n: ++figN, page: info.label }) });
           return;
         }
         const { para } = it;
@@ -306,20 +311,11 @@ export async function importPdf(id: string, file: File, onProgress: (p: ImportPr
     const scanCount = pages.filter((p) => p.kind === 'scan').length;
     const textCount = pages.filter((p) => p.kind === 'text').length;
     const doubt = pages.map((p, i) => (p.orderDoubt ? i : -1)).filter((i) => i >= 0);
+    // Los avisos se guardan con el documento, en el idioma del momento de la importación.
     const warnings: string[] = [];
-    if (doubt.length) {
-      warnings.push(
-        `El orden de lectura podría no ser exacto en ${doubt.length === 1 ? 'la página' : 'las páginas'} ${listLabels(pages, doubt)} (texto en columnas, tablas o recuadros). Podés consultar la página original.`,
-      );
-    }
-    if (scanCount) {
-      warnings.push(
-        scanCount === n
-          ? 'Es un PDF escaneado: sus páginas son imágenes sin texto seleccionable. Para leerlo de a un renglón hay que reconocer el texto (OCR) en este dispositivo.'
-          : `${scanCount} de ${n} páginas son imágenes escaneadas. Para leerlas de a un renglón hay que reconocer su texto (OCR).`,
-      );
-    }
-    if (!scanCount && !blocks.some((b) => b.len > 0)) warnings.push('El PDF no contiene texto legible.');
+    if (doubt.length) warnings.push(t('import.pdf.orderDoubt', { count: doubt.length, pages: listLabels(pages, doubt) }));
+    if (scanCount) warnings.push(scanCount === n ? t('import.pdf.scanned') : t('import.pdf.mixed', { scans: scanCount, total: n }));
+    if (!scanCount && !blocks.some((b) => b.len > 0)) warnings.push(t('import.pdf.noText'));
 
     const meta: DocMeta = {
       id,
@@ -344,11 +340,13 @@ export async function importPdf(id: string, file: File, onProgress: (p: ImportPr
   }
 }
 
+/** «3», «3 y 5», «1, 2 y 9», o las doce primeras y «y N más». */
 export function listLabels(pages: PageInfo[], idx: number[]): string {
   const labels = idx.slice(0, 12).map((i) => pages[i]!.label);
-  const more = idx.length > 12 ? ` y ${idx.length - 12} más` : '';
-  if (labels.length === 1) return labels[0]! + more;
-  return labels.slice(0, -1).join(', ') + (more ? ', ' + labels[labels.length - 1] + more : ' y ' + labels[labels.length - 1]);
+  const extra = idx.length - labels.length;
+  if (extra > 0) return t('list.andMore', { list: labels.join(', '), count: extra });
+  if (labels.length === 1) return labels[0]!;
+  return t('list.and', { list: labels.slice(0, -1).join(', '), last: labels[labels.length - 1]! });
 }
 
 function decodeText(html: string): string {

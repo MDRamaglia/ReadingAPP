@@ -1,13 +1,14 @@
+import { fmtNumber, t, type Key } from '../i18n';
 import { LIMITS, clamp, updateSettings } from '../lib/settings';
 import type { Settings, Theme } from '../lib/types';
 import { Sheet } from '../ui/Sheet';
 import { IconArrowsH, IconArrowsV, IconMinus, IconPlus, IconSpark } from '../ui/icons';
 import type { CurlSpeed } from '../lib/types';
 
-const THEMES: Array<{ id: Theme; label: string }> = [
-  { id: 'light', label: 'Claro' },
-  { id: 'sepia', label: 'Sepia' },
-  { id: 'dark', label: 'Oscuro' },
+const THEMES: Array<{ id: Theme; label: Key }> = [
+  { id: 'light', label: 'settings.theme.light' },
+  { id: 'sepia', label: 'settings.theme.sepia' },
+  { id: 'dark', label: 'settings.theme.dark' },
 ];
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -20,25 +21,25 @@ function widthLabel(s: Settings): string {
   const available = Math.max(200, window.innerWidth - 44);
   const px = Math.min(s.width * s.fontSize, available);
   const chars = Math.round(px / (s.fontSize * 0.5));
-  return `≈ ${chars} letras por renglón${s.width * s.fontSize > available ? ' (máximo de esta pantalla)' : ''}`;
+  return t(s.width * s.fontSize > available ? 'settings.widthCharsMax' : 'settings.widthChars', { count: chars });
 }
 
 export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { settings: Settings; onClose: () => void; pdfBook: boolean; curlAllowed: boolean }) {
   const size = (d: number) => updateSettings({ fontSize: clamp(s.fontSize + d, LIMITS.fontSize.min, LIMITS.fontSize.max) });
   return (
-    <Sheet title="Lectura" onClose={onClose} testId="settings-sheet">
-      {pdfBook && <p class="hint">En el modo libro los PDF se muestran con su diseño original; la tipografía se aplica al modo renglón.</p>}
+    <Sheet title={t('settings.title')} onClose={onClose} testId="settings-sheet">
+      {pdfBook && <p class="hint">{t('settings.pdfHint')}</p>}
 
       <div class="field">
-        <span class="field-label">Tamaño de letra</span>
+        <span class="field-label">{t('settings.fontSize')}</span>
         <div class="stepper">
-          <button class="icon-btn" onClick={() => size(-1)} aria-label="Achicar letra" disabled={s.fontSize <= LIMITS.fontSize.min}>
+          <button class="icon-btn" onClick={() => size(-1)} aria-label={t('settings.smaller')} disabled={s.fontSize <= LIMITS.fontSize.min}>
             <IconMinus />
           </button>
           <output class="stepper-value" aria-live="polite" data-testid="font-size">
             {s.fontSize}
           </output>
-          <button class="icon-btn" onClick={() => size(1)} aria-label="Agrandar letra" disabled={s.fontSize >= LIMITS.fontSize.max}>
+          <button class="icon-btn" onClick={() => size(1)} aria-label={t('settings.bigger')} disabled={s.fontSize >= LIMITS.fontSize.max}>
             <IconPlus />
           </button>
         </div>
@@ -46,7 +47,7 @@ export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { 
 
       <label class="field">
         <span class="field-label">
-          Ancho de lectura <small>{widthLabel(s)}</small>
+          {t('settings.width')} <small>{widthLabel(s)}</small>
         </span>
         <input
           type="range"
@@ -55,13 +56,13 @@ export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { 
           step={LIMITS.width.step}
           value={s.width}
           onInput={(e) => updateSettings({ width: Number((e.target as HTMLInputElement).value) })}
-          aria-label="Ancho de lectura"
+          aria-label={t('settings.width')}
         />
       </label>
 
       <label class="field">
         <span class="field-label">
-          Interlineado <small>{s.lineHeight.toFixed(1)}</small>
+          {t('settings.lineHeight')} <small>{fmtNumber(s.lineHeight, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</small>
         </span>
         <input
           type="range"
@@ -70,31 +71,31 @@ export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { 
           step={LIMITS.lineHeight.step}
           value={s.lineHeight}
           onInput={(e) => updateSettings({ lineHeight: round1(Number((e.target as HTMLInputElement).value)) })}
-          aria-label="Interlineado"
+          aria-label={t('settings.lineHeight')}
         />
       </label>
 
       <div class="field">
-        <span class="field-label">Tema</span>
-        <div class="swatches" role="radiogroup" aria-label="Tema">
-          {THEMES.map((t) => (
+        <span class="field-label">{t('settings.theme')}</span>
+        <div class="swatches" role="radiogroup" aria-label={t('settings.theme')}>
+          {THEMES.map((th) => (
             <button
-              key={t.id}
-              class={`swatch swatch-${t.id}${s.theme === t.id ? ' is-on' : ''}`}
+              key={th.id}
+              class={`swatch swatch-${th.id}${s.theme === th.id ? ' is-on' : ''}`}
               role="radio"
-              aria-checked={s.theme === t.id}
-              onClick={() => updateSettings({ theme: t.id })}
+              aria-checked={s.theme === th.id}
+              onClick={() => updateSettings({ theme: th.id })}
             >
               <span class="swatch-chip">Aa</span>
-              {t.label}
+              {t(th.label)}
             </button>
           ))}
         </div>
       </div>
 
       <div class="field">
-        <span class="field-label">Tipografía</span>
-        <div class="segmented" role="radiogroup" aria-label="Tipografía">
+        <span class="field-label">{t('settings.font')}</span>
+        <div class="segmented" role="radiogroup" aria-label={t('settings.font')}>
           <button role="radio" aria-checked={s.font === 'literata'} class={s.font === 'literata' ? 'is-on' : ''} onClick={() => updateSettings({ font: 'literata' })}>
             <span style={{ fontFamily: 'var(--font-literata)' }}>Literata</span>
           </button>
@@ -107,13 +108,13 @@ export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { 
       <BookNav s={s} curlAllowed={curlAllowed} />
 
       <div class="field">
-        <span class="field-label">Modo renglón: texto alrededor</span>
-        <div class="segmented" role="radiogroup" aria-label="Texto alrededor del renglón">
+        <span class="field-label">{t('settings.context')}</span>
+        <div class="segmented" role="radiogroup" aria-label={t('settings.contextLabel')}>
           <button role="radio" aria-checked={s.focusContext === 'dim'} class={s.focusContext === 'dim' ? 'is-on' : ''} onClick={() => updateSettings({ focusContext: 'dim' })}>
-            Atenuado
+            {t('settings.context.dim')}
           </button>
           <button role="radio" aria-checked={s.focusContext === 'hide'} class={s.focusContext === 'hide' ? 'is-on' : ''} onClick={() => updateSettings({ focusContext: 'hide' })}>
-            Oculto
+            {t('settings.context.hide')}
           </button>
         </div>
       </div>
@@ -121,10 +122,10 @@ export function SettingsSheet({ settings: s, onClose, pdfBook, curlAllowed }: { 
   );
 }
 
-const SPEEDS: Array<[CurlSpeed, string]> = [
-  ['slow', 'Lenta'],
-  ['normal', 'Normal'],
-  ['fast', 'Rápida'],
+const SPEEDS: Array<[CurlSpeed, Key]> = [
+  ['slow', 'settings.speed.slow'],
+  ['normal', 'settings.speed.normal'],
+  ['fast', 'settings.speed.fast'],
 ];
 
 /**
@@ -136,13 +137,13 @@ function BookNav({ s, curlAllowed }: { s: Settings; curlAllowed: boolean }) {
   const horizontal = s.bookDirection === 'horizontal';
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const usable = horizontal && curlAllowed;
-  let note = 'La hoja se dobla y descubre la página siguiente, como en un libro de papel.';
-  if (!horizontal) note = 'Disponible solo al pasar páginas en horizontal.';
-  else if (reduced) note = 'Tu dispositivo pide reducir el movimiento: por eso no se muestra.';
+  let note = t('settings.curl.note');
+  if (!horizontal) note = t('settings.curl.horizontalOnly');
+  else if (reduced) note = t('settings.curl.reducedMotion');
   return (
     <div class="field">
       <span class="field-label" id="book-nav-label">
-        Modo libro: pasar página
+        {t('settings.bookNav')}
       </span>
       <div class="segmented" role="radiogroup" aria-labelledby="book-nav-label">
         <button
@@ -152,7 +153,7 @@ function BookNav({ s, curlAllowed }: { s: Settings; curlAllowed: boolean }) {
           onClick={() => updateSettings({ bookDirection: 'horizontal' })}
           data-testid="dir-horizontal"
         >
-          <IconArrowsH size={18} /> Horizontal
+          <IconArrowsH size={18} /> {t('settings.dir.horizontal')}
         </button>
         <button
           role="radio"
@@ -161,24 +162,24 @@ function BookNav({ s, curlAllowed }: { s: Settings; curlAllowed: boolean }) {
           onClick={() => updateSettings({ bookDirection: 'vertical' })}
           data-testid="dir-vertical"
         >
-          <IconArrowsV size={18} /> Vertical
+          <IconArrowsV size={18} /> {t('settings.dir.vertical')}
         </button>
       </div>
       <p class="field-note">
-        {horizontal ? 'Hacia la izquierda o la derecha: tocá los costados o deslizá de lado.' : 'Hacia arriba o abajo: tocá arriba o abajo, o deslizá en vertical.'}
+        {horizontal ? t('settings.dir.horizontalNote') : t('settings.dir.verticalNote')}
       </p>
       <label class={`switch-row${usable ? '' : ' is-disabled'}`}>
         <span class="switch-text">
           <span class="switch-title">
-            Animación de página {!curlAllowed && <span class="plan-pill">Premium</span>}
+            {t('settings.curl.title')} {!curlAllowed && <span class="plan-pill">{t('plans.pill')}</span>}
           </span>
           {curlAllowed ? (
             <small>{note}</small>
           ) : (
             <small data-testid="curl-premium-note">
-              <IconSpark size={13} /> La hoja que se dobla al pasar página es parte del plan premium.{' '}
+              <IconSpark size={13} /> {t('settings.curl.premium')}{' '}
               <a href="#/planes" data-testid="curl-see-plans">
-                Ver planes
+                {t('common.seePlans')}
               </a>
             </small>
           )}
@@ -197,10 +198,10 @@ function BookNav({ s, curlAllowed }: { s: Settings; curlAllowed: boolean }) {
       {usable && s.pageCurl && (
         <div class="speed">
           <span class="field-note" id="curl-speed-label">
-            Velocidad de la animación
+            {t('settings.speed')}
           </span>
           <div class="segmented" role="radiogroup" aria-labelledby="curl-speed-label">
-            {SPEEDS.map(([id, label]) => (
+            {SPEEDS.map(([id, key]) => (
               <button
                 key={id}
                 role="radio"
@@ -209,7 +210,7 @@ function BookNav({ s, curlAllowed }: { s: Settings; curlAllowed: boolean }) {
                 onClick={() => updateSettings({ curlSpeed: id })}
                 data-testid={`curl-speed-${id}`}
               >
-                {label}
+                {t(key)}
               </button>
             ))}
           </div>

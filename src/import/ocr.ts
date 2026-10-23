@@ -4,6 +4,7 @@
  * español se sirven desde la propia app: no se envía nada a ningún servidor.
  */
 import type Tesseract from 'tesseract.js';
+import { t } from '../i18n';
 import { getDoc, getFile, getBlocks, putBlocks, putDoc } from '../lib/db';
 import { closePdf, openPdf, renderPageToCanvas, vendorUrl } from '../lib/pdfjs';
 import { escapeHtml, looksLikePageNumber } from '../lib/text';
@@ -212,20 +213,13 @@ function refreshMeta(meta: DocMeta, blocks: Block[]): void {
   const idx = (st: OcrPageStatus) => pages.map((p, i) => (p.ocr?.status === st ? i : -1)).filter((i) => i >= 0);
   const low = idx('low');
   const failed = idx('failed');
+  // Los avisos del OCR se rehacen en cada tanda. Se reconocen por su texto en
+  // español (los avisos se guardan como texto): ver el seguimiento de P10
+  // sobre guardarlos como códigos para poder traducirlos.
   meta.warnings = meta.warnings.filter((w) => !w.startsWith('Reconocimiento') && !/escanead[oa]s?\b/.test(w));
-  if (pending) {
-    meta.warnings.push(`${pending} ${pending === 1 ? 'página escaneada sigue' : 'páginas escaneadas siguen'} sin reconocer.`);
-  }
-  if (failed.length) {
-    meta.warnings.push(
-      `Reconocimiento fallido en ${failed.length === 1 ? 'la página' : 'las páginas'} ${listLabels(pages, failed)}: no se obtuvo texto confiable. Consultá la página original.`,
-    );
-  }
-  if (low.length) {
-    meta.warnings.push(
-      `Reconocimiento dudoso en ${low.length === 1 ? 'la página' : 'las páginas'} ${listLabels(pages, low)}: puede haber palabras mal leídas (se marcan con subrayado punteado).`,
-    );
-  }
+  if (pending) meta.warnings.push(t('import.ocr.pending', { count: pending }));
+  if (failed.length) meta.warnings.push(t('import.ocr.failed', { count: failed.length, pages: listLabels(pages, failed) }));
+  if (low.length) meta.warnings.push(t('import.ocr.low', { count: low.length, pages: listLabels(pages, low) }));
 
   // Índice: los marcadores del PDF se reubican en los bloques nuevos; si el
   // PDF no tenía marcadores, se arma con los títulos reconocidos.

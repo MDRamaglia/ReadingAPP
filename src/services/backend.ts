@@ -13,6 +13,7 @@
  * Se elige con la variable de compilación VITE_BACKEND ('local' o 'remote').
  */
 import type { PlanId } from '../config/plans';
+import { t } from '../i18n';
 import type {
   ClubReply,
   ClubThread,
@@ -46,7 +47,7 @@ export interface SubscriptionService {
 
 export interface Backend {
   readonly kind: 'local' | 'remote';
-  /** Descripción para mostrar al usuario (por ejemplo, «Prueba local en este dispositivo»). */
+  /** Descripción para mostrar al usuario (por ejemplo, «Prueba local en este dispositivo»), en el idioma actual. */
   readonly label: string;
 
   // ——— Cuentas ———
@@ -55,6 +56,13 @@ export interface Backend {
   signIn(email: string, password: string): Promise<User>;
   signOut(): Promise<void>;
   requestPasswordReset(email: string): Promise<PendingAction>;
+  /**
+   * Guarda la fecha de nacimiento («AAAA-MM-DD») del usuario actual, que se
+   * pide al entrar por primera vez al Reading Club. Se carga una sola vez:
+   * si ya hay una, responde 'forbidden' (no se cambia desde la app). Una
+   * fecha inexistente, futura o anterior a 1900 responde 'invalid'.
+   */
+  setBirthDate(date: string): Promise<User>;
 
   // ——— Reseñas ———
   listReviews(q: ReviewQuery): Promise<Review[]>;
@@ -65,7 +73,7 @@ export interface Backend {
   /** Da o retira el like del usuario actual (uno por persona y reseña). */
   toggleLike(id: string): Promise<{ liked: boolean; likes: number }>;
 
-  // ——— Reading Club (premium) ———
+  // ——— Reading Club (16 años o más y premium) ———
   listThreads(q: { category?: string; authorId?: string }): Promise<ClubThread[]>;
   getThread(id: string): Promise<{ thread: ClubThread; replies: ClubReply[] }>;
   createThread(input: ThreadInput): Promise<ClubThread>;
@@ -92,17 +100,17 @@ export const pendingSubscriptions = (current: () => Promise<User | null>): Subsc
     return { plan: user?.plan ?? 'free', status: user?.plan === 'premium' ? 'active' : 'none' };
   },
   async startCheckout() {
-    return { ok: false, message: 'La contratación del plan premium estará disponible próximamente.' };
+    return { ok: false, message: t('subscription.checkoutSoon') };
   },
   async cancel() {
     const user = await current();
     return {
       ok: false,
-      message: user?.plan === 'premium' ? 'La gestión de la suscripción estará disponible próximamente.' : 'No tenés una suscripción activa.',
+      message: user?.plan === 'premium' ? t('subscription.manageSoon') : t('subscription.noActive'),
     };
   },
   async manage() {
-    return { ok: false, message: 'La gestión de la suscripción estará disponible próximamente.' };
+    return { ok: false, message: t('subscription.manageSoon') };
   },
 });
 

@@ -4,6 +4,7 @@
  * lectura de forma automática.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { t } from '../i18n';
 import { docAssets, getBlocks, getDoc, getFile, getProgress, mirrorProgress, putDoc, saveProgress } from '../lib/db';
 import { closePdf, openPdf, type PDFDocumentProxy } from '../lib/pdfjs';
 import { allowed } from '../lib/access';
@@ -35,14 +36,14 @@ const START: Position = { b: 0, o: 0, page: 0 };
 
 async function loadDoc(id: string): Promise<Loaded> {
   const meta = await getDoc(id);
-  if (!meta) throw new Error('No se encontró el documento.');
+  if (!meta) throw new Error(t('reader.notFound'));
   const blocks = await getBlocks(id);
   const assets = await docAssets(id);
   const urls = new Map(assets.map((a) => [a.key, URL.createObjectURL(a.blob)]));
   let pdf: PDFDocumentProxy | null = null;
   if (meta.kind === 'pdf') {
     const file = await getFile(id);
-    if (!file) throw new Error('Falta el archivo original del PDF.');
+    if (!file) throw new Error(t('reader.missingPdf'));
     pdf = await openPdf(await file.arrayBuffer());
   }
   const saved = await getProgress(id);
@@ -204,7 +205,7 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     setToast(msg);
     window.setTimeout(() => setToast((t) => (t === msg ? '' : t)), 1800);
   };
-  const onEdge = useCallback((e: 'start' | 'end') => showToast(e === 'end' ? 'Llegaste al final del documento' : 'Estás al comienzo'), []);
+  const onEdge = useCallback((e: 'start' | 'end') => showToast(e === 'end' ? t('reader.atEnd') : t('reader.atStart')), []);
 
   // ——— Continuar o empezar ———
   const begin = (p: Progress | null) => {
@@ -307,18 +308,18 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     setHint(
       mode === 'focus'
         ? touch
-          ? 'Tocá para avanzar un renglón. Tocá el borde izquierdo o la flecha para volver.'
-          : 'Clic, flecha ↓ o espacio para avanzar un renglón; flecha ↑ o clic a la izquierda para volver.'
+          ? t('reader.hint.focusTouch')
+          : t('reader.hint.focusPointer')
         : touch
           ? vertical
-            ? 'Tocá la parte de abajo o deslizá hacia arriba para pasar de página. El centro muestra u oculta los controles.'
-            : 'Tocá el costado derecho o deslizá para pasar de página. El centro muestra u oculta los controles.'
+            ? t('reader.hint.bookTouchVertical')
+            : t('reader.hint.bookTouch')
           : vertical
-            ? 'Flechas ↑ ↓, clic arriba o abajo, o rueda del mouse para pasar de página.'
-            : 'Flechas del teclado, clic en los costados o rueda del mouse para pasar de página.',
+            ? t('reader.hint.bookPointerVertical')
+            : t('reader.hint.bookPointer'),
     );
-    const t = window.setTimeout(() => setHint(''), 5200);
-    return () => clearTimeout(t);
+    const timer = window.setTimeout(() => setHint(''), 5200);
+    return () => clearTimeout(timer);
   }, [mode, started]);
 
   // Acceso para pruebas automatizadas.
@@ -331,12 +332,18 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
       <div class="center-msg">
         <p>{error}</p>
         <button class="btn" onClick={onExit}>
-          Volver a la biblioteca
+          {t('reader.backToLibrary')}
         </button>
       </div>
     );
   }
-  if (!doc) return <div class="center-msg" aria-busy="true">Abriendo…</div>;
+  if (!doc) {
+    return (
+      <div class="center-msg" aria-busy="true">
+        {t('reader.opening')}
+      </div>
+    );
+  }
 
   const { meta, blocks, urls, pdf } = doc;
 
@@ -345,26 +352,28 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     return (
       <div class="resume" data-testid="resume">
         <div class="resume-card">
-          <p class="resume-kicker">Continuar leyendo</p>
+          <p class="resume-kicker">{t('reader.resume.kicker')}</p>
           <h1 class="resume-title">{meta.title}</h1>
           {resume.snippet && <blockquote class="resume-snippet">«{resume.snippet}»</blockquote>}
           <p class="resume-meta">
-            {pct} % leído{resume.pageLabel ? ` · página ${resume.pageLabel}` : ''} · modo {resume.mode === 'focus' ? 'renglón' : 'libro'}
+            {t('reader.resume.read', { n: pct })}
+            {resume.pageLabel ? ` · ${t('reader.resume.page', { page: resume.pageLabel })}` : ''} ·{' '}
+            {resume.mode === 'focus' ? t('reader.resume.modeFocus') : t('reader.resume.modeBook')}
           </p>
           <button class="btn btn-primary btn-block" data-testid="resume-continue" onClick={() => begin(resume)}>
-            Continuar desde allí
+            {t('reader.resume.continue')}
           </button>
           <button class="btn btn-quiet btn-block" onClick={() => begin(null)}>
-            Empezar desde el principio
+            {t('reader.resume.restart')}
           </button>
           <button class="btn btn-quiet btn-block" onClick={onExit}>
-            Volver a la biblioteca
+            {t('reader.backToLibrary')}
           </button>
         </div>
       </div>
     );
   }
-  if (!started) return <div class="center-msg">Abriendo…</div>;
+  if (!started) return <div class="center-msg">{t('reader.opening')}</div>;
 
   // ——— Indicador de progreso ———
   const pos = report?.pos ?? initial;
@@ -378,15 +387,15 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
     const last = Math.min(report.pages, first + (report.perView ?? 1) - 1);
     const label = isPdf ? meta.pages?.[first - 1]?.label : String(first);
     const label2 = isPdf ? meta.pages?.[last - 1]?.label : String(last);
-    progressText = `Pág. ${label}${last > first ? `–${label2}` : ''} de ${isPdf ? report.pages : report.pages}`;
+    progressText = t('reader.progress.pages', { pages: last > first ? `${label}–${label2}` : String(label), total: report.pages });
     frac = report.pages > 1 ? (last - 1) / (report.pages - 1) : 1;
   } else if (textIndex) {
     frac = textIndex.pct(pos);
     const sec = textIndex.section(pos, meta);
-    progressText = `${Math.round(frac * 100)} %${pageInfo ? ` · pág. ${pageInfo.label}` : sec ? ` · ${sec}` : ''}`;
+    progressText = `${t('common.percent', { n: Math.round(frac * 100) })}${pageInfo ? ` · ${t('reader.pageShort', { page: pageInfo.label })}` : sec ? ` · ${sec}` : ''}`;
   }
   const doubt = isPdf && mode === 'focus' && pageInfo && (pageInfo.orderDoubt || pageInfo.ocr?.status === 'low' || pageInfo.ocr?.status === 'failed');
-  const doubtText = pageInfo?.orderDoubt ? 'orden dudoso' : 'OCR dudoso';
+  const doubtText = pageInfo?.orderDoubt ? t('reader.doubt.order') : t('reader.doubt.ocr');
   const ocrRunning = ocrState?.docId === meta.id && (ocrState.status === 'running' || ocrState.status === 'loading');
 
   const pageOfEntry = (b: number | undefined, p: number | undefined): number | null => {
@@ -481,7 +490,7 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
           />
         )}
         {mode === 'focus' && (
-          <button class="line-back" onClick={() => handle.current?.prev()} aria-label="Renglón anterior" data-testid="line-back">
+          <button class="line-back" onClick={() => handle.current?.prev()} aria-label={t('reader.prevLine')} data-testid="line-back">
             <IconUp size={26} />
           </button>
         )}
@@ -507,35 +516,35 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
           </span>
           {doubt && (
             <button class="doubt-badge" onClick={() => setSheet('original')} data-testid="doubt-badge">
-              <IconWarn size={14} /> {doubtText} · ver original
+              <IconWarn size={14} /> {doubtText} · {t('reader.doubt.seeOriginal')}
             </button>
           )}
           {ocrRunning && (
             <button class="doubt-badge" onClick={() => setSheet('ocr')}>
-              <IconScan size={14} /> OCR {ocrState!.done}/{ocrState!.total}
+              <IconScan size={14} /> {t('reader.ocrProgress', { done: ocrState!.done, total: ocrState!.total })}
             </button>
           )}
         </div>
-        <nav class="toolbar" aria-label="Controles de lectura">
+        <nav class="toolbar" aria-label={t('reader.toolbar')}>
           <button
             class="tool"
             onClick={() => {
               flush();
               onExit();
             }}
-            aria-label="Biblioteca"
+            aria-label={t('nav.library')}
           >
             <IconLibrary />
-            <span>Biblioteca</span>
+            <span>{t('nav.library')}</span>
           </button>
-          <button class="tool" onClick={() => setSheet('toc')} aria-label="Ir a página o sección">
+          <button class="tool" onClick={() => setSheet('toc')} aria-label={t('reader.gotoLabel')}>
             <IconToc />
-            <span>Ir a</span>
+            <span>{t('reader.goto')}</span>
           </button>
-          <div class="mode-switch" role="radiogroup" aria-label="Modo de lectura">
+          <div class="mode-switch" role="radiogroup" aria-label={t('reader.modeLabel')}>
             <button role="radio" aria-checked={mode === 'book'} class={mode === 'book' ? 'is-on' : ''} onClick={() => switchMode('book')} data-testid="mode-book">
               <IconBook size={20} />
-              <span>Libro</span>
+              <span>{t('reader.mode.book')}</span>
             </button>
             <button
               role="radio"
@@ -545,18 +554,18 @@ export function Reader({ docId, onExit }: { docId: string; onExit: () => void })
               data-testid="mode-focus"
             >
               <IconLine size={20} />
-              <span>Renglón</span>
+              <span>{t('reader.mode.focus')}</span>
             </button>
           </div>
           {isPdf && mode === 'focus' ? (
-            <button class="tool" onClick={() => setSheet('original')} aria-label="Ver página original" data-testid="open-original">
+            <button class="tool" onClick={() => setSheet('original')} aria-label={t('reader.originalLabel')} data-testid="open-original">
               <IconPage />
-              <span>Original</span>
+              <span>{t('reader.original')}</span>
             </button>
           ) : null}
-          <button class="tool" onClick={() => setSheet('settings')} aria-label="Ajustes de lectura" data-testid="open-settings">
+          <button class="tool" onClick={() => setSheet('settings')} aria-label={t('reader.settingsLabel')} data-testid="open-settings">
             <IconType />
-            <span>Letra</span>
+            <span>{t('reader.settings')}</span>
           </button>
         </nav>
       </footer>

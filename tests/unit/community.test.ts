@@ -77,7 +77,7 @@ describe('búsqueda y orden de reseñas', () => {
 });
 
 describe('planes y permisos (configuración central)', () => {
-  const free: User = { id: 'u1', username: 'ana', email: 'a@x.com', plan: 'free', createdAt: 0 };
+  const free: User = { id: 'u1', username: 'ana', email: 'a@x.com', plan: 'free', createdAt: 0, birthDate: '1990-05-10' };
   const premium: User = { ...free, id: 'u2', plan: 'premium' };
 
   it('la tabla de funciones coincide con la propuesta', () => {
@@ -87,6 +87,7 @@ describe('planes y permisos (configuración central)', () => {
     expect(t.reviewsWrite).toEqual(['Incluido, con cuenta', 'Incluido']);
     expect(t.pageCurl).toEqual(['Acceso premium', 'Incluida']);
     expect(t.club).toEqual(['Acceso premium', 'Incluidos']);
+    expect(FEATURES.find((f) => f.id === 'club')!.label).toContain('para personas de 16 años o más');
   });
 
   it('decide el acceso según plan y cuenta', () => {
@@ -181,9 +182,10 @@ describe('servicio local de prueba: reseñas', () => {
 describe('servicio local de prueba: Reading Club', () => {
   it('reservado a premium; solo el autor modifica sus publicaciones y respuestas', async () => {
     const b = await fresh();
-    // Sin cuenta también se informa que es premium (el plan premium ya implica una cuenta).
-    expect(isServiceError(await asError(b.listThreads({})), 'premium-required')).toBe(true);
+    // Sin cuenta, primero se pide iniciar sesión (después la edad y recién entonces el plan).
+    expect(isServiceError(await asError(b.listThreads({})), 'auth-required')).toBe(true);
     await b.signUp({ username: 'ana', email: 'ana@mail.com', password: 'secreto123' });
+    await b.setBirthDate('1990-05-10');
     expect(isServiceError(await asError(b.listThreads({})), 'premium-required')).toBe(true);
     expect(isServiceError(await asError(b.createThread({ title: 'Hola', body: 'Texto', category: 'General' })), 'premium-required')).toBe(true);
     await b.dev.setPlan('premium');
@@ -192,6 +194,7 @@ describe('servicio local de prueba: Reading Club', () => {
     expect((await b.getThread(t.id)).thread.replyCount).toBe(1);
 
     await b.signUp({ username: 'beto', email: 'beto@mail.com', password: 'secreto123' });
+    await b.setBirthDate('1985-01-31');
     await b.dev.setPlan('premium');
     expect(isServiceError(await asError(b.updateThread(t.id, { title: 'X', body: 'Y', category: 'General' })), 'forbidden')).toBe(true);
     expect(isServiceError(await asError(b.deleteReply(reply.id)), 'forbidden')).toBe(true);

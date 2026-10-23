@@ -1,0 +1,252 @@
+
+=== biblioteca-vacia
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 7 KB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 4 KB.
+   -html lang=es
+   +html lang=pt
+
+=== importado-docx
+   -html lang=es
+   +html lang=pt
+
+=== importado-pdf
+   -html lang=es
+   +html lang=pt
+
+=== importado-escaneado
+   +PDF
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   -Sin empezar
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -html lang=es
+   +html lang=pt
+
+=== error-doc-antiguo
+   +PDF
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   -Sin empezar
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -html lang=es
+   +html lang=pt
+
+=== biblioteca-con-documentos
+   +PDF
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   -Sin empezar
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -html lang=es
+   +html lang=pt
+
+=== borrar-documento
+   +PDF
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   -Sin empezar
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Se eliminará Breve historia de la lectura de este dispositivo, junto con su texto, sus imágenes y tu progreso de lectura. No se puede deshacer.
+   +Se eliminará Documento escaneado de prueba de este dispositivo, junto con su texto, sus imágenes y tu progreso de lectura. No se puede deshacer.
+   -html lang=es
+   +html lang=pt
+
+=== lector-libro
+   -html lang=es
+   +html lang=pt
+
+=== ajustes-lectura
+   -html lang=es
+   +html lang=pt
+
+=== indice
+   -html lang=es
+   +html lang=pt
+
+=== lector-renglon
+   -html lang=es
+   +html lang=pt
+
+=== biblioteca-seguir-leyendo
+   +PDF
+   +Documento escaneado de prueba
+   +PDF escaneado · 3 pág. · 584 KB
+   +Sin empezar
+   -PDF
+   -Documento escaneado de prueba
+   -PDF escaneado · 3 pág. · 584 KB
+   -Sin empezar
+   -html lang=es
+   +html lang=pt
+
+=== lector-escaneado
+   -html lang=es
+   +html lang=pt
+
+=== escaneado-renglon
+   -html lang=es
+   +html lang=pt
+
+=== resenas-sin-cuenta
+   -html lang=es
+   +html lang=pt
+
+=== club-sin-cuenta
+   -html lang=es
+   +html lang=pt
+
+=== planes-sin-cuenta
+   -html lang=es
+   +html lang=pt
+
+=== cuenta-sin-sesion
+   -html lang=es
+   +html lang=pt
+
+=== ingresar-error
+   -html lang=es
+   +html lang=pt
+
+=== recuperar
+   -html lang=es
+   +html lang=pt
+
+=== registro-no-coinciden
+   -html lang=es
+   +html lang=pt
+
+=== perfil-gratuito
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== planes-gratuito
+   -html lang=es
+   +html lang=pt
+
+=== club-fecha
+   -html lang=es
+   +html lang=pt
+
+=== club-fecha-confirmar
+   -Tu fecha de nacimiento: 10 de mayo de 1990
+   +Tu fecha de nacimiento: 10 de maio de 1990
+   -html lang=es
+   +html lang=pt
+
+=== club-gratuito
+   -html lang=es
+   +html lang=pt
+
+=== resena-formulario
+   -html lang=es
+   +html lang=pt
+
+=== resena-publicada
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== resenas-con-una
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== borrar-resena
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== resena-error-validacion
+   -html lang=es
+   +html lang=pt
+
+=== panel-desarrollo
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el 23 de outubro de 2026
+   -10 de mayo de 1990
+   +10 de maio de 1990
+   -Laberintos — Ficciones · 23 de octubre de 2026 ·  0
+   +Laberintos — Ficciones · 23 de outubro de 2026 ·  0
+   -html lang=es
+   +html lang=pt
+
+=== perfil-premium
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el 23 de outubro de 2026
+   -10 de mayo de 1990
+   +10 de maio de 1990
+   -Laberintos — Ficciones · 23 de octubre de 2026 ·  0
+   +Laberintos — Ficciones · 23 de outubro de 2026 ·  0
+   -html lang=es
+   +html lang=pt
+
+=== club-premium-vacio
+   -html lang=es
+   +html lang=pt
+
+=== club-nueva
+   -html lang=es
+   +html lang=pt
+
+=== club-hilo
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== club-borrar-hilo
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -lectora_qa · 23 de octubre de 2026
+   +lectora_qa · 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== club-premium-lista
+   -lectora_qa · 23 de octubre de 2026 · 1 respuesta
+   +lectora_qa · 23 de outubro de 2026 · 1 respuesta
+   -html lang=es
+   +html lang=pt
+
+=== club-categoria-vacia
+   -html lang=es
+   +html lang=pt
+
+=== perfil-premium-con-publicaciones
+   -lectora@prueba.com · en Knowmadic desde el 23 de octubre de 2026
+   +lectora@prueba.com · en Knowmadic desde el 23 de outubro de 2026
+   -10 de mayo de 1990
+   +10 de maio de 1990
+   -Laberintos — Ficciones · 23 de octubre de 2026 ·  0
+   +Laberintos — Ficciones · 23 de outubro de 2026 ·  0
+   -Hilo de prueba · Textos propios · 23 de octubre de 2026
+   -Respuesta: «Una respuesta.» · 23 de octubre de 2026
+   +Hilo de prueba · Textos propios · 23 de outubro de 2026
+   +Respuesta: «Una respuesta.» · 23 de outubro de 2026
+   -html lang=es
+   +html lang=pt
+
+=== planes-premium
+   -html lang=es
+   +html lang=pt
+
+Pantallas con diferencias: 41 de 41

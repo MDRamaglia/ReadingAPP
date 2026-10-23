@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { t } from '../i18n';
 import type { PDFDocumentProxy } from '../lib/pdfjs';
 import type { PageInfo } from '../lib/types';
 import { Sheet } from '../ui/Sheet';
@@ -33,13 +34,13 @@ export function OriginalPage({ pdf, pages, page: initial, onClose }: { pdf: PDFD
   }, [page, zoom, info]);
 
   const notes: string[] = [];
-  if (info.orderDoubt) notes.push('En esta página el orden de lectura extraído puede no coincidir con el visual (columnas, tablas o recuadros).');
-  if (info.ocr?.status === 'low') notes.push(`Texto reconocido con confianza baja (${info.ocr.confidence ?? '?'} %). Compará con la imagen.`);
-  if (info.ocr?.status === 'failed') notes.push('No se pudo reconocer texto confiable en esta página.');
-  if (info.ocr?.status === 'pending') notes.push('Página escaneada todavía sin reconocer.');
+  if (info.orderDoubt) notes.push(t('original.orderDoubt'));
+  if (info.ocr?.status === 'low') notes.push(t('original.lowConfidence', { n: info.ocr.confidence ?? '?' }));
+  if (info.ocr?.status === 'failed') notes.push(t('original.failed'));
+  if (info.ocr?.status === 'pending') notes.push(t('original.pending'));
 
   return (
-    <Sheet title={`Página original ${info.label}`} onClose={onClose} wide testId="original-page">
+    <Sheet title={t('original.title', { page: info.label })} onClose={onClose} wide testId="original-page">
       {notes.map((n) => (
         <p class="hint hint-warn" key={n}>
           {n}
@@ -47,19 +48,19 @@ export function OriginalPage({ pdf, pages, page: initial, onClose }: { pdf: PDFD
       ))}
       <div class="orig-tools">
         <button class="btn btn-quiet" disabled={page === 0} onClick={() => setPage(page - 1)}>
-          ‹ Anterior
+          ‹ {t('original.prev')}
         </button>
         <span class="orig-count">
           {page + 1} / {pages.length}
         </span>
         <button class="btn btn-quiet" disabled={page >= pages.length - 1} onClick={() => setPage(page + 1)}>
-          Siguiente ›
+          {t('original.next')} ›
         </button>
         <span class="spacer" />
-        <button class="icon-btn" aria-label="Alejar" disabled={zoom <= 1} onClick={() => setZoom(Math.max(1, zoom - 0.5))}>
+        <button class="icon-btn" aria-label={t('original.zoomOut')} disabled={zoom <= 1} onClick={() => setZoom(Math.max(1, zoom - 0.5))}>
           <IconZoomOut />
         </button>
-        <button class="icon-btn" aria-label="Acercar" disabled={zoom >= 3} onClick={() => setZoom(Math.min(3, zoom + 0.5))}>
+        <button class="icon-btn" aria-label={t('original.zoomIn')} disabled={zoom >= 3} onClick={() => setZoom(Math.min(3, zoom + 0.5))}>
           <IconZoomIn />
         </button>
       </div>

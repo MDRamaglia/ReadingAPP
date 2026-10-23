@@ -4,7 +4,7 @@
  * demás pruebas).
  */
 import { expect, test } from '@playwright/test';
-import { artifacts, asPremium, importAndOpen, importFile, setPlan, signOut, signUp, tapAt, toFocus, waitBookReady } from './helpers';
+import { artifacts, asPremium, birthDateForAge, importAndOpen, importFile, setPlan, signOut, signUp, tapAt, toFocus, waitBookReady } from './helpers';
 
 const shot = (name: string, project: string) => artifacts(`capturas/${project}-${name}.png`);
 // Las hojas entran con una animación breve: se espera a que termine antes de capturar.
@@ -158,8 +158,17 @@ test.describe('Capturas', () => {
     await expect(like).toHaveAttribute('aria-pressed', 'true');
     await page.screenshot({ path: shot('32-resenas', p) });
 
-    // Plan gratuito: la animación y el Reading Club muestran cómo acceder.
+    // Primera entrada al Reading Club: se pide la fecha de nacimiento (16 años o más).
     await page.goto('/#/club');
+    await expect(page.locator('[data-testid=club-birth]')).toBeVisible();
+    await page.fill('[name=birthDate]', birthDateForAge(30));
+    await page.click('[data-testid=birth-submit]');
+    await expect(page.locator('[data-testid=birth-confirm-sheet]')).toBeVisible();
+    await page.screenshot({ path: shot('33a-club-fecha-nacimiento', p) });
+    await page.click('[data-testid=birth-confirm]');
+
+    // Plan gratuito: la animación y el Reading Club muestran cómo acceder.
+    await expect(page.locator('[data-testid=gate-premium]')).toBeVisible();
     await page.screenshot({ path: shot('33-club-sin-premium', p) });
     await page.goto('/#/planes');
     await page.screenshot({ path: shot('34-planes', p), fullPage: true });

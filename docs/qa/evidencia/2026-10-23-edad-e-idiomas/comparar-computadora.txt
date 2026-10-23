@@ -1,0 +1,175 @@
+
+=== importado-docx
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 3.2 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 3,3 MB.
+
+=== importado-pdf
+   +W
+   +Breve historia de la lectura
+   +Word · 47 KB
+   +Sin empezar
+   -W
+   -Breve historia de la lectura
+   -Word · 47 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 4.5 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 4,6 MB.
+
+=== importado-escaneado
+   +W
+   +Breve historia de la lectura
+   +Word · 47 KB
+   +Sin empezar
+   -W
+   -Breve historia de la lectura
+   -Word · 47 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+
+=== error-doc-antiguo
+   +W
+   +Breve historia de la lectura
+   +Word · 47 KB
+   +Sin empezar
+   -W
+   -Breve historia de la lectura
+   -Word · 47 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+
+=== biblioteca-con-documentos
+   +W
+   +Breve historia de la lectura
+   +Word · 47 KB
+   +Sin empezar
+   -W
+   -Breve historia de la lectura
+   -Word · 47 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+
+=== borrar-documento
+   +W
+   +Breve historia de la lectura
+   +Word · 47 KB
+   +Sin empezar
+   -W
+   -Breve historia de la lectura
+   -Word · 47 KB
+   -Sin empezar
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,0 MB.
+
+=== ajustes-lectura
+   -1.6
+   +1,6
+
+=== biblioteca-seguir-leyendo
+   +W
+   +Breve historia de la lectura
+   +Word · 47 KB
+   +0 %
+   -W
+   -Breve historia de la lectura
+   -Word · 47 KB
+   -0 %
+   -Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5.0 MB.
+   +Tus documentos y tu progreso se guardan solo en este dispositivo. La app no envía archivos a ningún servidor. Espacio usado: 5,1 MB.
+
+=== club-sin-cuenta
+   +El Reading Club es para mayores de 16 años.
+
+=== planes-sin-cuenta
+   -Acceso y participación en el foro (Reading Club)	 Acceso premium	Incluidos
+   +Acceso y participación en el foro (Reading Club), para mayores de 16 años	 Acceso premium	Incluidos
+   +El Reading Club es para mayores de 16 años: la primera vez que entrás te pedimos la fecha de nacimiento.
+
+=== perfil-gratuito
+   +FECHA DE NACIMIENTO
+   +Sin cargar. Se pide la primera vez que entrás al Reading Club, que es para mayores de 16 años.
+   -El Reading Club es parte del plan premium. Ver planes.
+   +El Reading Club es para mayores de 16 años: la primera vez que entrás te pedimos la fecha de nacimiento. Ir al Reading Club.
+
+=== planes-gratuito
+   -Acceso y participación en el foro (Reading Club)	 Acceso premium	Incluidos
+   +Acceso y participación en el foro (Reading Club), para mayores de 16 años	 Acceso premium	Incluidos
+   +El Reading Club es para mayores de 16 años: la primera vez que entrás te pedimos la fecha de nacimiento.
+
+=== club-gratuito
+   +El Reading Club es para mayores de 16 años.
+
+=== panel-desarrollo
+   +FECHA DE NACIMIENTO
+   +10 de mayo de 1990
+   +Ya está cargada y no se puede cambiar desde la app.
+
+=== perfil-premium
+   +FECHA DE NACIMIENTO
+   +10 de mayo de 1990
+   +Ya está cargada y no se puede cambiar desde la app.
+
+=== perfil-premium-con-publicaciones
+   +FECHA DE NACIMIENTO
+   +10 de mayo de 1990
+   +Ya está cargada y no se puede cambiar desde la app.
+
+=== planes-premium
+   -Acceso y participación en el foro (Reading Club)	 Acceso premium	Incluidos
+   +Acceso y participación en el foro (Reading Club), para mayores de 16 años	 Acceso premium	Incluidos
+   +El Reading Club es para mayores de 16 años: la primera vez que entrás te pedimos la fecha de nacimiento.
+
+=== club-fecha: solo en la versión nueva
+   + Knowmadic
+   + Un lugar para leer. Un espacio para pensar.
+   + Biblioteca
+   + Reseñas
+   + Reading Club
+   + Planes
+   + L
+   + lectora_qa
+   + Reading Club
+   + El espacio para conversar sobre lo que leemos y lo que escribimos.
+   + Confirmá tu fecha de nacimiento
+   + El Reading Club es para mayores de 16 años. Para comprobarlo, te pedimos tu fecha de nacimiento una sola vez.
+   + Fecha de nacimiento
+   + Una vez guardada, no se puede cambiar desde la app.
+   + Continuar
+   + Desarrollo
+   + aria-label=Knowmadic, ir a la biblioteca
+   + aria-label=Secciones
+   + html lang=es
+   + title=Knowmadic
+
+=== club-fecha-confirmar: solo en la versión nueva
+   + Knowmadic
+   + Un lugar para leer. Un espacio para pensar.
+   + Biblioteca
+   + Reseñas
+   + Reading Club
+   + Planes
+   + L
+   + lectora_qa
+   + Reading Club
+   + El espacio para conversar sobre lo que leemos y lo que escribimos.
+   + Confirmá tu fecha de nacimiento
+   + El Reading Club es para mayores de 16 años. Para comprobarlo, te pedimos tu fecha de nacimiento una sola vez.
+   + Fecha de nacimiento
+   + Una vez guardada, no se puede cambiar desde la app.
+   + Continuar
+   + ¿Es correcta la fecha?
+   + Tu fecha de nacimiento: 10 de mayo de 1990
+   + Una vez guardada, no se puede cambiar desde la app.
+   + Corregir
+   + Confirmar
+   + Desarrollo
+   + aria-label=Cerrar
+   + aria-label=Knowmadic, ir a la biblioteca
+   + aria-label=Secciones
+   + aria-label=¿Es correcta la fecha?
+   + html lang=es
+   + title=Knowmadic
+
+Pantallas con diferencias: 17 de 41
