@@ -73,6 +73,15 @@ No hay «KNOWMADIC» ni «KNOWMADICS».
   - `knowmadicapp.com`.
 - **Sin confirmar:** `.com.ar` y `.com.br` (hay que verlos en nic.ar y registro.br).
 
+## Actualización del 23 de octubre de 2026
+
+La matriz de nombres (`matriz-nombres.md`) consultó los registros oficiales de EE. UU. (TSDR) y de Canadá (CIPO) y precisó lo siguiente:
+
+- **Canadá:** KNOWMADIC quedó registrada el 03/11/2025 (TMA1356817). Cubre libros (16), grabaciones de poesía (9), *streaming* (38) y talleres de poesía (41). Está más cerca del rubro de Knowmadic de lo que parecía.
+- **EE. UU.:** KNOWMADIC es el registro 6854955, limitado a música en línea y conciertos (41).
+- **Google Play:** al buscar «knowmadic» aparece «Knowmadics Cases», de Knowmadics, Inc.
+- **Dominios:** `knowmadic.com.br` parece libre (RDAP de Registro.br).
+
 ## Lectura de riesgo, por mercado
 
 | Mercado | Riesgo | Por qué |
