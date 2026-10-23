@@ -16,6 +16,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | N-01 | **Revisar D09 (edad para tener cuenta).** Legal propone la opción B: leer sin cuenta, a cualquier edad; cuenta desde los 13 años, con fecha de nacimiento al registrarse; Reading Club desde los 16; menores de 18 necesitan autorización para pagar; en Brasil, cuenta desde los 16 hasta verificar el ECA Digital. Fundamento: las cuentas de menores de 13 no tendrían base legal válida (CCyC, art. 261, inc. c) y saber que un usuario tiene menos de 13 activa COPPA | Ver `docs/legal/notas-para-revision.md`, sección 4 | Legal |
 | N-02 | **Región del servidor y transferencias internacionales.** Legal propone: región en la UE (adecuada para Argentina y Brasil); consentimiento expreso para lo que va a EE. UU. y Singapur (soporte, correo, cobros); acuerdo de tratamiento de datos con cada proveedor. São Paulo, solo si la latencia lo exige | Sección 5 de las notas | Legal y Servidor |
 | N-04, N-10, N-12, N-16 | Arrepentimiento de 10 días sin restricciones; no vender premium en la web al lanzar; evaluar seguro o sociedad por la responsabilidad personal; lanzar primero en Argentina y el resto de Latinoamérica de habla hispana (Brasil y EE. UU. después) | Secciones 7, 13, 15 y 19 de las notas | Legal |
+| T11 | Versión mínima de Android: API 24 (lo que admite Capacitor 8) o API 29 (pdf.js pide Chrome 125, y Chrome exige Android 10) | Probar en emuladores; decidir con Desarrollo | Desarrollo app y QA |
 | T08 | **Público objetivo en Google Play** y qué pueden hacer los menores de 13 (¿publicar o solo leer?) | Requisitos recomienda declarar 13-15, 16-17 y 18+, sin política de Familias. Ver `docs/requisitos/google-play.md`, sección 3 | Requisitos de tiendas y Legal |
 | T09 | Quién modera antes de que llegue el Community Manager, incluida la prueba cerrada | — | Coordinador |
 | T10 | Categoría de la app en Google Play | «Libros y obras de consulta» («Social» sumaría las normas de seguridad infantil) | Requisitos de tiendas |
@@ -42,7 +43,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P16 | Inscripción de la base de datos en la AAIP (guía en `docs/legal/guia-aaip.md`: gratuita y sin vencimiento; hacerla antes de la prueba cerrada) | Titular | P02 | pendiente |
 | P17 | Alta impositiva, facturación, W-8BEN y cuenta en dólares. Las preguntas para el contador están listas en `docs/impuestos/preguntas-para-el-contador.md`; el titular completa la sección 1 y lo lleva a la reunión | Titular y contador | — | en curso |
 | P18 | Registro de la marca elegida (INPI Argentina y Brasil) | Legal y Titular | T01 | pendiente |
-| P19 | Plan de pruebas y lista de control de publicación | QA, sobre la lista de control de Requisitos | P22 | en curso |
+| P19 | Plan de pruebas y lista de control de publicación (`docs/qa/plan.md`: 174 casos; `docs/qa/lista-de-publicacion.md`: 89 puntos) | QA | P22 | hecho |
 | P20 | Medición de uso y errores, con consentimiento | Servidor y Legal | P02 | pendiente |
 | P21 | Crear la cuenta personal de Google Play: pago, verificación de identidad y dispositivo. Antes, decidir qué domicilio declarar (queda público al cobrar), el nombre de desarrollador y un correo de soporte provisorio. **Ojo:** si en un año no se envía ninguna app a revisión, Google cierra la cuenta | Titular, con la guía de Requisitos | P23 (hecha) | pendiente |
 | P22 | Lista de control oficial de Google Play contrastada con el estado real de la app (`docs/requisitos/google-play.md`: 6 cumplidos, 62 faltan, 12 no aplican todavía) | Requisitos de tiendas | — | hecho |
@@ -55,6 +56,11 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P30 | Aceptar los términos y normas antes de publicar contenido (GP-35) | Desarrollo app, Servidor y Legal | P04, P02 | pendiente |
 | P31 | Análisis de ECA Digital (Brasil), SB 2420 (Texas) y la Play Age Signals API (GP-48) | Legal y Desarrollo app | T08 | pendiente |
 | P32 | Cuentas de revisión gratuita y premium (de 16 años o más), con instrucciones en inglés (GP-72 y GP-73) | Servidor y Requisitos de tiendas | P02 | pendiente |
+| P33 | Otra forma de dar premium en las pruebas automáticas **antes** de cerrar el panel de desarrollo (hoy dependen de `?dev=1`) | Desarrollo app y QA | — | pendiente |
+| P34 | Adaptar las pruebas que van a cambiar con el servidor real: 05 (ninguna petición fuera del origen), y 09 y 12 («Prueba local») | Desarrollo app y QA | P02 | pendiente |
+| P35 | Revisar en el esquema de `docs/backend.md` que el contador de likes no se pueda modificar por la API, y el borrado en cascada de respuestas ajenas (N-06) | Servidor | P02 | pendiente |
+| P36 | OCR: sumar los modelos de inglés y portugués (hoy solo español) | Desarrollo app | — | pendiente |
+| P37 | Capturas para la ficha sin «Prueba local» ni el botón «Desarrollo» | Diseño y Desarrollo app | P01, P02 | pendiente |
 | P23 | Guía paso a paso para crear la cuenta personal y explicación de la prueba cerrada (`docs/requisitos/guia-cuenta-google-play.md`) | Requisitos de tiendas | — | hecho |
 
 ## Para más adelante

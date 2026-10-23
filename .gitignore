@@ -12,3 +12,4 @@ __pycache__/
 *.jks
 *.keystore
 keystore.properties
+key.properties
