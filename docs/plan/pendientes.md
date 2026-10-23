@@ -13,6 +13,9 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | T05 | Precios y planes (mensual y anual) por mercado | Propuesta por mercado: Argentina, resto de Latinoamérica, Brasil y países de habla inglesa | Producto y precios |
 | T06 | Variante del español: voseo (Argentina) o neutro (resto de Latinoamérica) | La app hoy usa voseo. Opción: «es-AR» con voseo y «es-419» neutro | Localización |
 | T07 | Países del primer lanzamiento | Empezar por América, sin la Unión Europea, para no sumar DSA y RGPD al principio. **Ojo:** en Colombia y Perú el IVA queda a cargo del desarrollador aunque esté en el exterior; conviene dejarlos para después, salvo que el contador diga otra cosa | Requisitos de tiendas, Legal y Contable |
+| N-01 | **Revisar D09 (edad para tener cuenta).** Legal propone la opción B: leer sin cuenta, a cualquier edad; cuenta desde los 13 años, con fecha de nacimiento al registrarse; Reading Club desde los 16; menores de 18 necesitan autorización para pagar; en Brasil, cuenta desde los 16 hasta verificar el ECA Digital. Fundamento: las cuentas de menores de 13 no tendrían base legal válida (CCyC, art. 261, inc. c) y saber que un usuario tiene menos de 13 activa COPPA | Ver `docs/legal/notas-para-revision.md`, sección 4 | Legal |
+| N-02 | **Región del servidor y transferencias internacionales.** Legal propone: región en la UE (adecuada para Argentina y Brasil); consentimiento expreso para lo que va a EE. UU. y Singapur (soporte, correo, cobros); acuerdo de tratamiento de datos con cada proveedor. São Paulo, solo si la latencia lo exige | Sección 5 de las notas | Legal y Servidor |
+| N-04, N-10, N-12, N-16 | Arrepentimiento de 10 días sin restricciones; no vender premium en la web al lanzar; evaluar seguro o sociedad por la responsabilidad personal; lanzar primero en Argentina y el resto de Latinoamérica de habla hispana (Brasil y EE. UU. después) | Secciones 7, 13, 15 y 19 de las notas | Legal |
 | T08 | **Público objetivo en Google Play** y qué pueden hacer los menores de 13 (¿publicar o solo leer?) | Requisitos recomienda declarar 13-15, 16-17 y 18+, sin política de Familias. Ver `docs/requisitos/google-play.md`, sección 3 | Requisitos de tiendas y Legal |
 | T09 | Quién modera antes de que llegue el Community Manager, incluida la prueba cerrada | — | Coordinador |
 | T10 | Categoría de la app en Google Play | «Libros y obras de consulta» («Social» sumaría las normas de seguridad infantil) | Requisitos de tiendas |
@@ -24,7 +27,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P01 | Cerrar el panel de desarrollo (`?dev=1`) en la versión publicada | Desarrollo app | Versión candidata (D10) | pospuesto |
 | P02 | Servidor real: cuentas, recuperación por correo, reseñas, likes y club (`remoteBackend.ts`) | Servidor | T02 | pendiente |
 | P03 | Borrado de cuenta dentro de la app y página web de borrado | Desarrollo app y Servidor | P02 | pendiente |
-| P04 | Política de privacidad, términos y normas de la comunidad, enlazados en la app | Legal y Localización | T01 | en curso (borradores) |
+| P04 | Política de privacidad, términos y normas de la comunidad (borradores en `docs/legal/`, a revisar por el titular; no se publican hasta que exista lo que describen) | Legal y Localización | T01, N-01, N-02 | en revisión del titular |
 | P05 | Moderación: denunciar, bloquear, filtrar y cola de revisión | Servidor y Desarrollo app | P02 | pendiente |
 | P06 | Control de edad (16+) para el Reading Club; registro sin límite de edad (D09) | Desarrollo app y Legal | — | en curso |
 | P07 | Empaquetado Android y resguardo de la clave de firma | Desarrollo app | T03 | pendiente |
@@ -36,7 +39,7 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P13 | Ficha de Google Play en tres idiomas: textos, capturas y gráficos. El nombre tiene un máximo de 30 caracteres: «Knowmadic: lector PDF y Word» entra, la versión con «de» no. Falta saber si se puede usar «Word» | Marketing, Diseño y Localización | T01 | pendiente |
 | P14 | Formularios de Play: seguridad de datos, clasificación, público objetivo y anuncios | Requisitos de tiendas y Legal | P02, P04 | pendiente |
 | P15 | Reclutar al menos 12 personas para la prueba cerrada de 14 días | Marketing y Titular | — | pendiente |
-| P16 | Inscripción de la base de datos en la AAIP | Legal (prepara la guía, en curso) y Titular (trámite) | P02 | en curso (guía) |
+| P16 | Inscripción de la base de datos en la AAIP (guía en `docs/legal/guia-aaip.md`: gratuita y sin vencimiento; hacerla antes de la prueba cerrada) | Titular | P02 | pendiente |
 | P17 | Alta impositiva, facturación, W-8BEN y cuenta en dólares. Las preguntas para el contador están listas en `docs/impuestos/preguntas-para-el-contador.md`; el titular completa la sección 1 y lo lleva a la reunión | Titular y contador | — | en curso |
 | P18 | Registro de la marca elegida (INPI Argentina y Brasil) | Legal y Titular | T01 | pendiente |
 | P19 | Plan de pruebas y lista de control de publicación | QA, sobre la lista de control de Requisitos | P22 | en curso |
