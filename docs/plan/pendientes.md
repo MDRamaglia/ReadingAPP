@@ -6,22 +6,25 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 
 | # | Decisión | Propuesta del equipo | Prepara |
 |---|---|---|---|
-| T01 | **Nombre de la app.** Depende de si EE. UU. y Canadá entran en el primer lanzamiento (ver T07). **Si entran:** «Bookmadic» en todos los mercados (sin coincidencias; `.com`, `.app` y `.com.br` libres; falta descartar a mano la cercanía con BOOKMATE). **Si se postergan:** «Knowmadic» solo en Latinoamérica y Brasil, excluyendo EE. UU. y Canadá. No se recomienda la ficha con otro nombre por país, porque el nombre visible en la app sigue siendo Knowmadic. Ver `docs/legal/matriz-nombres.md` | Legal y Marketing |
 | T02 | Proveedor del servidor | **Listo para decidir:** `docs/tecnico/decision-servidor-empaquetado-cobros.md` recomienda Supabase (gratuito para desarrollar; Pro, USD 25 por mes, antes de la prueba cerrada), con un proveedor de correo aparte (Resend o Amazon SES). **Región:** una de la Unión Europea (adecuada para Argentina y Brasil) o São Paulo (menor latencia); antes, Legal define el mecanismo de transferencia | Servidor |
 | T03 | Empaquetado para Android | **Listo para decidir:** Capacitor 8. Cobro nativo, funciona sin conexión y sirve después para el iPhone. El nombre del paquete no se puede cambiar después | Desarrollo app |
 | T04 | Herramienta de cobros | **Listo para decidir:** RevenueCat (de 4 a 7 días de trabajo, contra 12 a 20 del cobro directo). El plan lo decide nuestro servidor y se guardan los comprobantes de Google para poder irse si hiciera falta | Servidor |
 | T05 | Precios y planes (mensual y anual) por mercado | Propuesta por mercado: Argentina, resto de Latinoamérica, Brasil y países de habla inglesa | Producto y precios |
 | T06 | Variante del español: voseo (Argentina) o neutro (resto de Latinoamérica) | La app hoy usa voseo. Opción: «es-AR» con voseo y «es-419» neutro | Localización |
-| T07 | Países del primer lanzamiento | Empezar por América, sin la Unión Europea, para no sumar DSA y RGPD al principio. **Ojo:** en Colombia y Perú el IVA queda a cargo del desarrollador aunque esté en el exterior; conviene dejarlos para después, salvo que el contador diga otra cosa | Requisitos de tiendas, Legal y Contable |
-| N-01 | **Revisar D09 (edad para tener cuenta).** Legal propone la opción B: leer sin cuenta, a cualquier edad; cuenta desde los 13 años, con fecha de nacimiento al registrarse; Reading Club desde los 16; menores de 18 necesitan autorización para pagar; en Brasil, cuenta desde los 16 hasta verificar el ECA Digital. Fundamento: las cuentas de menores de 13 no tendrían base legal válida (CCyC, art. 261, inc. c) y saber que un usuario tiene menos de 13 activa COPPA | Ver `docs/legal/notas-para-revision.md`, sección 4 | Legal |
 | N-02 | **Región del servidor y transferencias internacionales.** Legal propone: región en la UE (adecuada para Argentina y Brasil); consentimiento expreso para lo que va a EE. UU. y Singapur (soporte, correo, cobros); acuerdo de tratamiento de datos con cada proveedor. São Paulo, solo si la latencia lo exige | Sección 5 de las notas | Legal y Servidor |
 | N-04, N-10, N-12, N-16 | Arrepentimiento de 10 días sin restricciones; no vender premium en la web al lanzar; evaluar seguro o sociedad por la responsabilidad personal; lanzar primero en Argentina y el resto de Latinoamérica de habla hispana (Brasil y EE. UU. después) | Secciones 7, 13, 15 y 19 de las notas | Legal |
 | T11 | Versión mínima de Android: API 24 (lo que admite Capacitor 8) o API 29 (pdf.js pide Chrome 125, y Chrome exige Android 10) | Probar en emuladores; decidir con Desarrollo | Desarrollo app y QA |
 | T12 | Marca: sumar las clases 38 y 45 a la 9, la 41 y la 42; registrar «Bookmadic» en Argentina como resguardo aunque se elija Knowmadic | Ver `matriz-nombres.md`, sección del plan de registro | Legal |
-| T13 | «DOCX» en lugar de «Word» en el nombre de la ficha y en los rótulos de la app (las pautas de Microsoft no permiten su marca en el nombre sin licencia) | Usar «lector PDF y DOCX» y mencionar Word solo en la descripción, aclarando que no hay afiliación | Legal y Marketing |
-| T08 | **Público objetivo en Google Play** y qué pueden hacer los menores de 13 (¿publicar o solo leer?) | Requisitos recomienda declarar 13-15, 16-17 y 18+, sin política de Familias. Ver `docs/requisitos/google-play.md`, sección 3 | Requisitos de tiendas y Legal |
-| T09 | Quién modera antes de que llegue el Community Manager, incluida la prueba cerrada | — | Coordinador |
-| T10 | Categoría de la app en Google Play | «Libros y obras de consulta» («Social» sumaría las normas de seguridad infantil) | Requisitos de tiendas |
+
+## Decididas el 24/10/2026
+
+- T01 → decidida en D12 (`decisiones.md`).
+- T07 → decidida en D14 (`decisiones.md`).
+- N-01 → decidida en D13 (`decisiones.md`).
+- T13 → decidida en D17 (`decisiones.md`).
+- T08 → decidida en D15 (`decisiones.md`).
+- T09 → decidida en D16 (`decisiones.md`).
+- T10 → decidida en D17 (`decisiones.md`).
 
 ## Tareas
 
@@ -68,6 +71,12 @@ Estados: **pendiente**, **en curso**, **bloqueado** (con el motivo) y **hecho**.
 | P40 | Idiomas fuera de `src/`: `index.html` y manifiesto; selector de idioma; decidir qué pasa con fechas y números en la vista previa `?lang=` (F3) | Desarrollo app y Localización | P10 | pendiente |
 | P41 | Camino por soporte para corregir una fecha de nacimiento mal cargada (derecho de rectificación) | Producto, Legal y Servidor | P12 | pendiente |
 | P42 | Ofrecer premium a menores de 16, cuando el premium incluye el Reading Club: definir la oferta | Producto y Legal | N-01 | pendiente |
+| P43 | Implementar D13: fecha de nacimiento al registrarse (pantalla neutral), cuenta desde 13 años, Reading Club desde 16 y autorización para que paguen los menores de 18. Reemplaza el pedido de la fecha al entrar al club | Desarrollo app y Legal | — | pendiente |
+| P44 | Textos legales: quedarse con la variante B y adaptarlos al lanzamiento en EE. UU. (versión en inglés, normas estatales de privacidad y de menores) | Legal y Localización | D13, D14 | pendiente |
+| P45 | Verificación final del nombre: búsqueda manual de «Bookmadic» (TMview, USPTO, INPI) y confirmar si «Knowmadic» es registrable en EE. UU. Después, el cambio de marca en la app, los recursos gráficos y la ficha | Titular y Legal; después Diseño, Desarrollo app y Marketing | D12 | pendiente |
+| P46 | Inglés listo para el lanzamiento (EE. UU. entra en la primera tanda): app, textos legales y ficha. El portugués baja de prioridad (Brasil, después) | Localización | P10 | pendiente |
+| P47 | Requisitos de EE. UU.: ley de Texas SB 2420 (verificación de edad en las tiendas), impuesto a las ventas que gestiona Google, W-8BEN y privacidad | Requisitos de tiendas, Legal y Contable | D14 | pendiente |
+| P48 | Revisar país por país el IVA a los servicios digitales en la Latinoamérica de habla hispana (como en Colombia y Perú) antes de cerrar la lista de países | Contable | D14 | pendiente |
 | P23 | Guía paso a paso para crear la cuenta personal y explicación de la prueba cerrada (`docs/requisitos/guia-cuenta-google-play.md`) | Requisitos de tiendas | — | hecho |
 
 ## Para más adelante

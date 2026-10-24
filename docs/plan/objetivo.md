@@ -10,7 +10,7 @@ Se cumple cuando estén terminadas todas estas condiciones, y no antes.
 - Servidor real: registro, ingreso, recuperación de contraseña por correo, reseñas, likes y Reading Club guardados en el servidor.
 - Borrado de cuenta dentro de la app y por una página web.
 - Moderación: denunciar contenido, bloquear usuarios, filtrar lo objetable y una cola de revisión con respuesta a tiempo.
-- Control de edad para el Reading Club (16 años o más). El registro es libre (decisión D09), coherente con el público objetivo y la clasificación declarados en la tienda.
+- Control de edad según D13: cuenta desde los 13 años (fecha de nacimiento al registrarse) y Reading Club desde los 16. Coherente con el público objetivo (13+, D15) y la clasificación de la tienda.
 
 **Cobro**
 - Plan premium cobrado con Google Play Billing y **validado en el servidor**, con restauración de compras y enlace para gestionar la suscripción.
@@ -22,7 +22,7 @@ Se cumple cuando estén terminadas todas estas condiciones, y no antes.
 - Panel de desarrollo cerrado en la versión publicada.
 
 **Idiomas, dominio y ficha**
-- App, textos legales y ficha de la tienda en español, inglés y portugués.
+- App, textos legales y ficha de la tienda en español e inglés para el primer lanzamiento (D14). El portugués entra con Brasil.
 - Dominio propio con correo de soporte.
 - Ficha de la tienda completa y formularios de Google Play respondidos: seguridad de los datos, clasificación, público objetivo y anuncios.
 
